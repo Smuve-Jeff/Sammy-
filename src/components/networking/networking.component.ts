@@ -1,5 +1,7 @@
+
 import { Component, ChangeDetectionStrategy, input, signal, computed, inject, effect, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 // FIX: Update AppTheme import to break circular dependency
 import { AppTheme } from '../../services/user-context.service';
 import { AiService, GenerateContentResponse, Type } from '../../services/ai.service';
@@ -18,9 +20,10 @@ export const MOCK_ARTISTS: ArtistProfile[] = [
 
 @Component({
   selector: 'app-networking',
+  standalone: true,
   templateUrl: './networking.component.html',
   styleUrls: ['./networking.component.css'],
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NetworkingComponent {
@@ -65,12 +68,23 @@ export class NetworkingComponent {
           responseSchema: { type: Type.OBJECT, properties: { matchingArtistIds: { type: Type.ARRAY, items: { type: Type.STRING } } } },
         },
       });
-      const result = JSON.parse(response.text);
+
+      let jsonText = response.text || '{}';
+      // Clean up potential markdown code blocks which can cause JSON parse errors
+      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+      // Guard against invalid JSON strings before parsing
+      if (!jsonText || jsonText === 'undefined' || jsonText === 'null') {
+         throw new Error('Invalid JSON received from AI');
+      }
+
+      const result = JSON.parse(jsonText);
       const ids = new Set(result.matchingArtistIds || []);
       const filtered = MOCK_ARTISTS.filter(a => ids.has(a.id));
       this.displayedArtists.set(filtered);
       if (filtered.length === 0) this.errorMessage.set('AI found no matching artists.');
     } catch (error) {
+      console.error("Networking search error:", error);
       this.errorMessage.set('AI search failed. Using basic filter.');
       this.fallbackSearch(locationQuery, filter);
     } finally {

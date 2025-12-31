@@ -5,6 +5,7 @@ import { AppTheme } from '../../services/user-context.service';
 
 @Component({
   selector: 'app-audio-visualizer',
+  standalone: true,
   templateUrl: './audio-visualizer.component.html',
   styleUrls: ['./audio-visualizer.component.css'],
   imports: [CommonModule],
@@ -61,7 +62,7 @@ export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {
     const analyser = this.analyserNode();
     if (!analyser || !this.ctx) { this.stopVisualizer(); return; }
 
-    analyser.getByteFrequencyData(this.dataArray);
+    analyser.getByteFrequencyData(this.dataArray as any);
     const canvas = this.canvasRef().nativeElement;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
     const barCount = analyser.frequencyBinCount;

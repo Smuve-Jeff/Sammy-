@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, ElementRef, viewChild, OnDestroy, input, effect, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 // FIX: Corrected import path for AiService. It was '../../services/ai.service' which is incorrect.
 import { AiService, GenerateVideosOperation } from '../services/ai.service';
 // FIX: Update AppTheme import to break circular dependency
@@ -7,9 +8,10 @@ import { AppTheme } from '../services/user-context.service';
 
 @Component({
   selector: 'app-video-editor',
+  standalone: true,
   templateUrl: './video-editor.component.html',
   styleUrls: ['./video-editor.component.css'],
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VideoEditorComponent implements OnDestroy {

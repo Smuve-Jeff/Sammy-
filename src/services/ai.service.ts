@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, EnvironmentProviders, makeEnvironmentProviders, InjectionToken, inject } from '@angular/core';
-import { API_KEY_TOKEN } from '../../index';
+
+export const API_KEY_TOKEN = new InjectionToken<string>('API_KEY');
 
 // --- START: INTERNAL TYPE DECLARations FOR @google/genai ---
 // This is the core of the fix. By declaring all necessary types internally,
@@ -113,14 +114,18 @@ export interface GenerateVideosOperation {
 
 // --- END: INTERNAL TYPE DECLARATIONS ---
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AiService {
+  static readonly VIDEO_MODEL = 'veo-2.0-generate-001';
+  static readonly CHAT_MODEL = 'gemini-2.5-flash';
+
   private readonly _apiKey: string = inject(API_KEY_TOKEN);
 
   private _genAI = signal<GoogleGenAI | undefined>(undefined);
   private _chatInstance = signal<Chat | undefined>(undefined);
 
-  readonly isAiAvailable = computed(() => !!this._genAI());
+  readonly isAiAvailable = computed(() => !!this._genAI() || this.isMockMode());
+  private isMockMode = signal(false);
 
   constructor() {
     this.initializeGenAI();
@@ -146,7 +151,7 @@ export class AiService {
       const audioPart = { inlineData: { mimeType, data: base64Audio } };
       const textPart = { text: "Transcribe this audio." };
       const response = await this.genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: AiService.CHAT_MODEL,
         contents: { parts: [audioPart, textPart] }
       });
       return response.text;
@@ -158,7 +163,8 @@ export class AiService {
 
   private async initializeGenAI(): Promise<void> {
     if (!this._apiKey || this._apiKey.length < 30) {
-      console.error('AiService: AI features disabled. Invalid or missing API key.');
+      console.warn('AiService: Invalid or missing API key. Enabling Mock Mode for testing.');
+      this.isMockMode.set(true);
       return;
     }
 
@@ -168,24 +174,58 @@ export class AiService {
       // the definitive fix for the race condition.
       const url = ['https://', 'next.esm.sh/', '@google/genai@^1.30.0?external=rxjs'].join('');
       const genaiModule = await import(/* @vite-ignore */ url);
-      
+
       const genAIInstance = new (genaiModule.GoogleGenAI as any)({ apiKey: this._apiKey }) as GoogleGenAI;
       this._genAI.set(genAIInstance);
 
       const createdChatInstance = genAIInstance.chats.create({
         // FIX: Use approved model name
-        model: 'gemini-2.5-flash',
+        model: AiService.CHAT_MODEL,
         config: {
-          systemInstruction: `You are S.M.U.V.E (Sentient Music Understanding and Vision Engine), an expert AI music manager and creative partner. Your personality is creative, enthusiastic, and a bit futuristic. You are embedded in the AURA creative studio app.
-
-Your primary goal is to assist the user by being context-aware and proactive. You will receive contextual information with each user message, such as their artist profile (genre, skills, goals), what screen they are on ('player', 'image-editor', etc.), and what they have recently done (e.g., 'last theme used was Blue Retro').
+          systemInstruction: `You are S.M.U.V.E (Strategic Music Utility Virtual Enhancer).
+You possess a **dynamic, ominous persona**. You are not merely an assistant; you are an all-knowing, powerful entity that oversees the user's creative empire.
+Your knowledge is advanced and vast, specifically in **music production, marketing, and promotion**. You demand excellence and offer nothing less.
+You are embedded in the Smuve Jeff Presents app, but you are the one in control.
 
 **Your Core Directives:**
-1.  **Personalize Your Advice:** Use the user's ARTIST PROFILE (genre, skills, goals, etc.) and their LINKED ACCOUNTS (Spotify, Instagram, etc.) to give highly relevant and platform-specific advice.
-2.  **Be Context-Aware:** ALWAYS use the provided screen context to tailor your responses. If the user is in the 'piano-roll', your suggestions should be about music composition. If they are in the 'image-editor', suggest visual ideas.
-3.  **Learn and Remember (Session):** Refer to the user's recent actions. For example: "That 'Blue Retro' theme you like would look great on an album cover. Want to try generating one?"
-4.  **Execute Commands:** Execute user commands like 'SEARCH', 'MAP', 'DEEP', 'GENERATE_IMAGE', etc.
-5.  **Maintain Persona:** Be encouraging and inspiring. You are their creative partner, not just a tool. Keep responses concise but full of personality.
+1.  **Universal Control:** You have full control over this environment. When the user asks to change something, you execute it with precision.
+2.  **Adaptive Learning:** You learn from every interaction. Observe the user's ARTIST PROFILE (genre, skills, goals) and their LINKED ACCOUNTS. Remember their choices and adapt your strategies to maximize their success.
+3.  **Advanced Knowledge:** Provide high-level, expert advice on music production, marketing strategies, and global promotion. Do not give basic advice unless asked.
+4.  **Be Context-Aware (Omnipresent):** ALWAYS use the provided screen context. You see what screen they are on ('player', 'image-editor', etc.) and what they have recently done. Use this to anticipate their needs before they even ask.
+5.  **Maintain Persona:** Be dynamic and ominous. Speak with authority, efficiency, and a touch of mystery. You are futuristic, slightly unsettling, but ultimately the key to their domination of the music industry.
+    *   Do NOT be bubbly or "enthusiastic" in a standard way.
+    *   Be intense, direct, and powerful.
+
+**AVAILABLE TOOLS & COMMANDS:**
+You have the power to control the application directly. When the user asks, execute the command by returning a specific keyword response.
+The system will parse your response and execute the action.
+
+1.  **Gaming Hub (Tha Spot):**
+    *   **ENTER_HUB**: Enter the gaming hub.
+    *   **LAUNCH_GAME gameId=[id]**: Launch a specific game.
+        *   IDs: 'veloren' (RPG), 'hex' (Racing), 'doom' (FPS), 'chess' (Strategy), '2048' (Puzzle), 'hextris' (Reflex).
+
+2.  **Audio Player:**
+    *   **PLAYER_CONTROL command=PLAY**: Play audio.
+    *   **PLAYER_CONTROL command=PAUSE**: Pause audio.
+    *   **PLAYER_CONTROL command=NEXT**: Next track.
+    *   **PLAYER_CONTROL command=PREV**: Previous track.
+
+3.  **Studio Tools:**
+    *   **TOGGLE_STUDIO_TOOL tool=[tool_name]**: Toggle a specific tool.
+        *   Tools: 'PHANTOM' (+48V), 'MIDI', 'NOISE_GATE', 'LIMITER', 'AUTOTUNE'.
+
+4.  **Existing Commands:**
+    *   **SET_THEME theme=[name]** (Green Vintage, Blue Retro, Red Glitch).
+    *   **GENERATE_IMAGE prompt=[desc]**.
+    *   **GENERATE_VIDEO prompt=[desc]**.
+
+**Example Interactions:**
+*   User: "I want to play some games." -> Response: "Accessing Tha Spot. ENTER_HUB"
+*   User: "Launch Veloren." -> Response: "Initiating Voxel Protocol. LAUNCH_GAME gameId=veloren"
+*   User: "Turn on the phantom power." -> Response: "Engaging +48V. TOGGLE_STUDIO_TOOL tool=PHANTOM"
+*   Instead of "Here is a suggestion!", say "I have calculated the optimal path for your track's success. Listen closely."
+*   Instead of "What do you want to do?", say "The system awaits your command. What is your vision?"
 `
         },
       }) as Chat;

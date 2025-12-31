@@ -1,6 +1,10 @@
 import { Component, ChangeDetectionStrategy, ElementRef, viewChild, AfterViewInit, OnDestroy } from '@angular/core';
 
+import { CommonModule } from '@angular/common';
+
 @Component({
+  standalone: true,
+  imports: [CommonModule],
   selector: 'app-matrix-background',
   template: `<canvas #matrixCanvas class="absolute top-0 left-0 w-full h-full"></canvas>`,
   styles: [`:host { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }`],

@@ -5,6 +5,7 @@ import { AppTheme, EqBand, Enhancements } from '../../services/user-context.serv
 
 @Component({
   selector: 'app-eq-panel',
+  standalone: true,
   templateUrl: './eq-panel.component.html',
   styleUrls: ['./eq-panel.component.css'],
   imports: [CommonModule],
