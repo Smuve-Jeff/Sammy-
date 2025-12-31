@@ -20,6 +20,7 @@ ALL_NOTES.reverse();
 
 @Component({
   selector: 'app-piano-roll',
+  standalone: true,
   templateUrl: './piano-roll.component.html',
   styleUrls: ['./piano-roll.component.css'],
   imports: [CommonModule],

@@ -1,9 +1,10 @@
 
 import { Component, ChangeDetectionStrategy, signal, ElementRef, viewChild, effect, OnDestroy, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { EqPanelComponent } from '../components/eq-panel/eq-panel.component';
 import { MatrixBackgroundComponent } from '../components/sample-library/matrix-background.component';
-import { ChatbotComponent } from '../components/audio-visualizer/chatbot/chatbot.component';
+import { ChatbotComponent } from '../chatbot/chatbot.component';
 import { ImageEditorComponent } from '../components/image-editor/image-editor.component';
 import { VideoEditorComponent } from './video-editor.component';
 import { AudioVisualizerComponent } from '../components/audio-visualizer/audio-visualizer.component';
@@ -28,9 +29,10 @@ const THEMES: AppTheme[] = [
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, EqPanelComponent, MatrixBackgroundComponent, ChatbotComponent, ImageEditorComponent, VideoEditorComponent, AudioVisualizerComponent, PianoRollComponent, NetworkingComponent, ProfileEditorComponent],
+  imports: [CommonModule, FormsModule, EqPanelComponent, MatrixBackgroundComponent, ChatbotComponent, ImageEditorComponent, VideoEditorComponent, AudioVisualizerComponent, PianoRollComponent, NetworkingComponent, ProfileEditorComponent],
   host: {
     '(window:mousemove)': 'onScratch($event)', '(window:touchmove)': 'onScratch($event)',
     '(window:mouseup)': 'onScratchEnd()', '(window:touchend)': 'onScratchEnd()',
@@ -254,30 +256,6 @@ export class AppComponent implements OnDestroy {
 
   toggleChatbot(): void { this.showChatbot.update(s => !s); }
   toggleEqPanel(): void { this.showEqPanel.update(s => !s); }
-
-  handleChatbotCommand(command: { action: string; parameters: any; }): void {
-    const { action, parameters } = command;
-    switch (action) {
-      case 'SET_THEME': this.currentTheme.set(this.THEMES.find(t => t.name.toLowerCase() === parameters.theme?.toLowerCase()) || this.currentTheme()); break;
-      case 'GENERATE_IMAGE': this.imageEditorInitialPrompt.set(parameters.prompt); this.mainViewMode.set('image-editor'); break;
-      case 'GENERATE_VIDEO': this.videoEditorInitialPrompt.set(parameters.prompt); this.mainViewMode.set('video-editor'); break;
-      case 'ANALYZE_IMAGE': this.imageToAnalyzeUrl.set(parameters.imageUrl); break;
-      case 'TRANSCRIBE_AUDIO': break;
-      case 'ANALYZE_VIDEO':
-        const track = this.deckA().isPlaying ? this.deckA().track : this.deckB().track;
-        if(track) this.videoToAnalyze.set({ track, prompt: parameters.prompt });
-        break;
-      case 'FIND_ON_MAP': this.mapLocationQuery.set(parameters.query); break;
-      case 'FIND_ARTISTS': this.networkingLocationQuery.set(parameters.location || ''); this.mainViewMode.set('networking'); break;
-      case 'VIEW_ARTIST_PROFILE':
-        const artist = MOCK_ARTISTS.find(a => a.name.toLowerCase() === parameters.name?.toLowerCase());
-        if (artist) {
-          this.selectedArtistProfile.set(artist);
-          this.mainViewMode.set('networking');
-        }
-        break;
-    }
-  }
 
   handleImageSelectedForAlbumArt(imageUrl: string): void {
     this.imageToApplyAsAlbumArt.set(imageUrl);

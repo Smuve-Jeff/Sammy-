@@ -119,7 +119,7 @@
 
   <!-- Chatbot -->
   @if (showChatbot()) {
-    <app-chatbot [theme]="currentTheme()" [mainViewMode]="mainViewMode()" (close)="toggleChatbot()" (appCommand)="handleChatbotCommand($event)" [imageToAnalyzeUrl]="imageToAnalyzeUrl()" [videoToAnalyze]="videoToAnalyze" (imageAnalysisResult)="imageAnalysisResult.set($event)" (mapLocationResult)="mapLocationResult.set($event)"></app-chatbot>
+    <app-chatbot [theme]="currentTheme()" [mainViewMode]="mainViewMode()" (close)="toggleChatbot()"></app-chatbot>
   }
   
   <!-- Modals -->
