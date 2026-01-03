@@ -12,7 +12,7 @@ import { AppTheme } from '../../services/user-context.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
-  theme = signal<AppTheme>({ name: 'Green Vintage', primary: 'green', accent: 'amber', neutral: 'neutral', purple: 'purple', red: 'red', blue: 'blue' });
+  theme = input.required<AppTheme>();
   email = signal('');
   password = signal('');
   isLoggingIn = signal(false);
