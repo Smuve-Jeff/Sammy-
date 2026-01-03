@@ -6,18 +6,15 @@
     "app": {
       "projectType": "application",
       "root": "",
-      "sourceRoot": "./",
+      "sourceRoot": "src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": {
-              "base": "./dist",
-              "browser": "."
-            },
-            "index": "index.html",
-            "browser": "index.tsx",
+            "outputPath": "dist/app",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
             "tsConfig": "tsconfig.json",
             "styles": [
               "src/styles.css"
@@ -38,7 +35,7 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "port": 3000
+            "port": 4200
           },
           "configurations": {
             "production": {
