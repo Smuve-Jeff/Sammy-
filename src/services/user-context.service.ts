@@ -3,12 +3,6 @@ import { Injectable, signal } from '@angular/core';
 // FIX: Moved AppTheme interface here from app.component.ts to break a circular dependency.
 export interface AppTheme { name: string; primary: string; accent: string; neutral: string; purple: string; red: string; blue: string; }
 
-export const THEMES: AppTheme[] = [
-  { name: 'Green Vintage', primary: 'green', accent: 'amber', neutral: 'neutral', purple: 'purple', red: 'red', blue: 'blue' },
-  { name: 'Blue Retro', primary: 'blue', accent: 'fuchsia', neutral: 'zinc', purple: 'purple', red: 'red', blue: 'blue' },
-  { name: 'Red Glitch', primary: 'red', accent: 'cyan', neutral: 'stone', purple: 'purple', red: 'red', blue: 'blue' },
-];
-
 // FIX: Added 'profile' and 'login' to the MainViewMode type to match its usage in app.component.ts
 export type MainViewMode = 'player' | 'dj' | 'piano-roll' | 'image-editor' | 'video-editor' | 'networking' | 'profile' | 'tha-spot' | 'user-profile-builder';
 
@@ -39,7 +33,7 @@ export const initialDeckState: DeckState = {
 })
 export class UserContextService {
   mainViewMode = signal<MainViewMode>('player');
-  lastUsedTheme = signal<AppTheme | null>(THEMES[0]);
+  lastUsedTheme = signal<AppTheme | null>(null);
   lastGeneratedImageUrl = signal<string | null>(null);
 
   setMainViewMode(mode: MainViewMode): void {

@@ -16,14 +16,20 @@ import { AiService } from '../services/ai.service';
 import { AuthService } from '../services/auth.service';
 import { UserProfileBuilderComponent } from '../components/user-profile-builder/user-profile-builder.component';
 // FIX: Import AppTheme and shared types from UserContextService to break circular dependency which caused injection errors.
-import { UserContextService, AppTheme, Track, EqBand, Enhancements, DeckState, initialDeckState, MainViewMode, THEMES } from '../services/user-context.service';
+import { UserContextService, AppTheme, Track, EqBand, Enhancements, DeckState, initialDeckState } from '../services/user-context.service';
 import { UserProfileService } from '../services/user-profile.service';
 
 declare global {
   interface HTMLAudioElement { __sourceNode?: MediaElementAudioSourceNode; }
 }
 
+type MainViewMode = 'player' | 'dj' | 'piano-roll' | 'image-editor' | 'video-editor' | 'networking' | 'profile' | 'tha-spot' | 'user-profile-builder';
 type ScratchState = { active: boolean; lastAngle: number; platterElement: HTMLElement | null; };
+const THEMES: AppTheme[] = [
+  { name: 'Green Vintage', primary: 'green', accent: 'amber', neutral: 'neutral', purple: 'purple', red: 'red', blue: 'blue' },
+  { name: 'Blue Retro', primary: 'blue', accent: 'fuchsia', neutral: 'zinc', purple: 'purple', red: 'red', blue: 'blue' },
+  { name: 'Red Glitch', primary: 'red', accent: 'cyan', neutral: 'stone', purple: 'purple', red: 'red', blue: 'blue' },
+];
 
 @Component({
   selector: 'app-root',
