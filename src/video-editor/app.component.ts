@@ -202,7 +202,7 @@ export class AppComponent implements OnDestroy {
         this.currentTrackIndex.set(0);
         // Pre-load tracks into decks
         this.deckA.update(d => ({ ...d, track: newTracks[0] }));
-        if (.length > 1) {
+        if (newTracks.length > 1) {
           this.deckB.update(d => ({ ...d, track: newTracks[1] }));
         }
       }
