@@ -40,13 +40,13 @@
 
       @switch (mainViewMode()) {
         @case ('user-profile-builder') {
-          <div class="flex justify-center items-center h-full">
+          <!-- <div class="flex justify-center items-center h-full">
             <app-user-profile-builder (profileSaved)="handleProfileSaved()"></app-user-profile-builder>
-          </div>
+          </div> -->
         }
         @case ('dj') {
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- DECK A -->
+          <!-- <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            
             <div class="border p-2 flex flex-col gap-2" [class]="djBorderClass()">
               <h3 class="text-center" [class]="djTextColorClass()">[ DECK A ]</h3>
               <div class="bg-black p-2 text-center text-xs truncate">
@@ -63,7 +63,7 @@
                   <button class="p-2 border" (click)="playNextOnDeck('A')">[ NEXT ]</button>
                </div>
             </div>
-            <!-- DECK B -->
+            
              <div class="border p-2 flex flex-col gap-2" [class]="djBorderClass()">
               <h3 class="text-center" [class]="djTextColorClass()">[ DECK B ]</h3>
               <div class="bg-black p-2 text-center text-xs truncate">
@@ -84,18 +84,18 @@
           <div class="flex justify-center gap-4 mt-4">
             <button class="p-2 border" (click)="toggleRepeat()" [class.bg-green-700]="repeat()">[ REPEAT ]</button>
             <button class="p-2 border" (click)="toggleShuffle()" [class.bg-green-700]="shuffle()">[ SHUFFLE ]</button>
-          </div>
+          </div> -->
         }
-        @case ('piano-roll') { <app-piano-roll></app-piano-roll> }
-        @case ('image-editor') { <app-image-editor [theme]="currentTheme()" [initialPrompt]="imageEditorInitialPrompt()" (imageSelected)="handleImageSelectedForAlbumArt($event)" (imageAnalysisRequest)="handleChatbotCommand({ action: 'ANALYZE_IMAGE', parameters: { imageUrl: $event }})" (imageGenerated)="handleImageGenerated($event)"></app-image-editor> }
-        @case ('video-editor') { <app-video-editor [theme]="currentTheme()" [initialPrompt]="videoEditorInitialPrompt()" [imageForVideoGeneration]="lastImageEditorImageUrl()"></app-video-editor> }
-        @case ('networking') { <app-networking [theme]="currentTheme()" [initialSearchQuery]="networkingLocationQuery()" (artistProfileSelected)="selectedArtistProfile.set($event)"></app-networking> }
-        @case ('profile') { <app-profile-editor [theme]="currentTheme()"></app-profile-editor> }
-        @case ('tha-spot') { <app-hub></app-hub> }
+        @case ('piano-roll') { <!-- <app-piano-roll></app-piano-roll> --> }
+        @case ('image-editor') { <!-- <app-image-editor [theme]="currentTheme()" [initialPrompt]="imageEditorInitialPrompt()" (imageSelected)="handleImageSelectedForAlbumArt($event)" (imageAnalysisRequest)="handleChatbotCommand({ action: 'ANALYZE_IMAGE', parameters: { imageUrl: $event }})" (imageGenerated)="handleImageGenerated($event)"></app-image-editor> --> }
+        @case ('video-editor') { <!-- <app-video-editor [theme]="currentTheme()" [initialPrompt]="videoEditorInitialPrompt()" [imageForVideoGeneration]="lastImageEditorImageUrl()"></app-video-editor> --> }
+        @case ('networking') { <!-- <app-networking [theme]="currentTheme()" [initialSearchQuery]="networkingLocationQuery()" (artistProfileSelected)="selectedArtistProfile.set($event)"></app-networking> --> }
+        @case ('profile') { <!-- <app-profile-editor [theme]="currentTheme()"></app-profile-editor> --> }
+        @case ('tha-spot') { <!-- <app-hub></app-hub> --> }
         @default {
           <!-- Player Mode -->
-          <div class="flex flex-col lg:flex-row items-start gap-4">
-            <!-- Left Panel: Player and Visualizer -->
+          <!-- <div class="flex flex-col lg:flex-row items-start gap-4">
+            
             <div class="w-full lg:w-2/3 flex flex-col items-center gap-4">
               <app-audio-visualizer [analyserNode]="getMasterAnalyser()" [theme]="currentTheme()" class="w-full h-48"></app-audio-visualizer>
               <div class="text-center">
@@ -121,7 +121,7 @@
                 </div>
               </div>
             </div>
-            <!-- Right Panel: Playlist -->
+            
             <div class="w-full lg:w-1/3 border p-2 h-96 overflow-y-auto" [class]="mainBorderClass()">
               <button (click)="fileInput.click()" class="p-2 border w-full mb-2" [class]="mainHoverBgClass()">[ LOAD TRACKS ]</button>
               @for (track of playlist(); track track.url; let i = $index) {
@@ -132,16 +132,16 @@
                 </div>
               }
             </div>
-          </div>
+          </div> -->
         }
       }
     </div>
   </div>
 
   <!-- Chatbot -->
-  @if (showChatbot()) {
+  <!-- @if (showChatbot()) {
     <app-chatbot [theme]="currentTheme()" [mainViewMode]="mainViewMode()" (close)="toggleChatbot()"></app-chatbot>
-  }
+  } -->
   
   <!-- Modals -->
   @if (showImageAnalysisModal() && imageAnalysisResult()) {
