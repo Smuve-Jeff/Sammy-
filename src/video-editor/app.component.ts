@@ -2,19 +2,8 @@
 import { Component, ChangeDetectionStrategy, signal, ElementRef, viewChild, effect, OnDestroy, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { EqPanelComponent } from '../components/eq-panel/eq-panel.component';
-import { MatrixBackgroundComponent } from '../components/sample-library/matrix-background.component';
-// import { ChatbotComponent } from '../chatbot/chatbot.component';
-import { ImageEditorComponent } from '../components/image-editor/image-editor.component';
-// import { VideoEditorComponent } from './video-editor.component';
-import { AudioVisualizerComponent } from '../components/audio-visualizer/audio-visualizer.component';
-import { PianoRollComponent } from '../components/piano-roll/piano-roll.component';
-import { NetworkingComponent, ArtistProfile, MOCK_ARTISTS } from '../components/networking/networking.component';
-import { ProfileEditorComponent } from '../components/profile-editor/profile-editor.component';
-import { HubComponent } from '../app/hub/hub';
 import { AiService } from '../services/ai.service';
 import { AuthService } from '../services/auth.service';
-import { UserProfileBuilderComponent } from '../components/user-profile-builder/user-profile-builder.component';
 // FIX: Import AppTheme and shared types from UserContextService to break circular dependency which caused injection errors.
 import { UserContextService, AppTheme, Track, EqBand, Enhancements, DeckState, initialDeckState } from '../services/user-context.service';
 import { UserProfileService } from '../services/user-profile.service';
@@ -36,7 +25,7 @@ const THEMES: AppTheme[] = [
   standalone: true,
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, EqPanelComponent, MatrixBackgroundComponent, /* ChatbotComponent, */ ImageEditorComponent, /* VideoEditorComponent, */ AudioVisualizerComponent, PianoRollComponent, NetworkingComponent, ProfileEditorComponent, HubComponent, UserProfileBuilderComponent],
+  imports: [CommonModule, FormsModule],
   host: {
     '(window:mousemove)': 'onScratch($event)', '(window:touchmove)': 'onScratch($event)',
     '(window:mouseup)': 'onScratchEnd()', '(window:touchend)': 'onScratchEnd()',
@@ -111,7 +100,7 @@ export class AppComponent implements OnDestroy {
   mapLocationResult = signal<string | null>(null);
   showMapResultsModal = signal(false);
   networkingLocationQuery = signal<string | null>(null);
-  selectedArtistProfile = signal<ArtistProfile | null>(null);
+  selectedArtistProfile = signal<any | null>(null);
   showArtistDetailModal = signal(false);
 
   private scratchStateA: ScratchState = { active: false, lastAngle: 0, platterElement: null };
@@ -213,7 +202,7 @@ export class AppComponent implements OnDestroy {
         this.currentTrackIndex.set(0);
         // Pre-load tracks into decks
         this.deckA.update(d => ({ ...d, track: newTracks[0] }));
-        if (newTracks.length > 1) {
+        if (.length > 1) {
           this.deckB.update(d => ({ ...d, track: newTracks[1] }));
         }
       }
@@ -310,7 +299,7 @@ export class AppComponent implements OnDestroy {
     const newVolume = Number((event.target as HTMLInputElement).value);
     this.volume.set(newVolume);
     const audioEl = this.mainAudioPlayerRef()?.nativeElement;
-    if (.audioEl) audioEl.volume = newVolume;
+    if (audioEl) audioEl.volume = newVolume;
   }
   formatTime(seconds: number): string {
     const min = Math.floor(seconds / 60);
