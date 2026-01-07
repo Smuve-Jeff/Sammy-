@@ -4,8 +4,10 @@ import { test, expect } from '@playwright/test';
 test('Final verification of UI changes and functionality', async ({ page }) => {
   await page.goto('http://localhost:4200');
 
-  // Close the chatbot overlay
-  await page.click('button:has-text("[X]")');
+  // Wait for the chatbot overlay to be visible before closing it
+  const chatbotCloseButton = page.locator('button:has-text("[X]")');
+  await chatbotCloseButton.waitFor({ state: 'visible', timeout: 10000 });
+  await chatbotCloseButton.click();
 
   // Fill out the user profile and save
   await page.locator('input[type="text"]').first().fill('Jules');

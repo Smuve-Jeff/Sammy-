@@ -22,6 +22,7 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.0",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",

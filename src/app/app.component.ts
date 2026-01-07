@@ -1,19 +1,19 @@
-import { Component, signal, computed, effect, inject, ChangeDetectorRef, ElementRef, viewChild, AfterViewInit } from '@angular/core';
+
+import { Component, signal, computed, effect, inject, ChangeDetectorRef, ElementRef, viewChild, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserContextService, AppTheme, MainViewMode } from '../services/user-context.service';
-import { AiService } from '../services/ai.service';
-import { EqPanelComponent } from '../components/eq-panel/eq-panel.component';
-import { MatrixBackgroundComponent } from '../components/matrix-background/matrix-background.component';
-import { ChatbotComponent } from '../chatbot/chatbot.component';
-import { ImageEditorComponent } from '../components/image-editor/image-editor.component';
-import { VideoEditorComponent } from './video-editor.component';
-import { AudioVisualizerComponent } from '../components/audio-visualizer/audio-visualizer.component';
-import { PianoRollComponent } from '../components/piano-roll/piano-roll.component';
-import { NetworkingComponent } from '../components/networking/networking.component';
-import { ProfileEditorComponent } from '../components/profile-editor/profile-editor.component';
-import { HubComponent } from '../app/hub/hub.component';
-import { AuthService } from '../services/auth.service';
+import { UserContextService, AppTheme, MainViewMode } from './services/user-context.service';
+import { AiService } from './services/ai.service';
+import { EqPanelComponent } from './components/eq-panel/eq-panel.component';
+import { MatrixBackgroundComponent } from './components/matrix-background/matrix-background.component';
+import { ChatbotComponent } from './components/chatbot/chatbot.component';
+import { ImageEditorComponent } from './components/image-editor/image-editor.component';
+import { AudioVisualizerComponent } from './components/audio-visualizer/audio-visualizer.component';
+import { PianoRollComponent } from './components/piano-roll/piano-roll.component';
+import { NetworkingComponent } from './components/networking/networking.component';
+import { ProfileEditorComponent } from './components/profile-editor/profile-editor.component';
+import { HubComponent } from '../hub/hub.component';
+import { AuthService } from './services/auth.service';
 
 interface Track {
   name: string;
@@ -37,7 +37,6 @@ interface DeckState {
     MatrixBackgroundComponent,
     ChatbotComponent,
     ImageEditorComponent,
-    VideoEditorComponent,
     AudioVisualizerComponent,
     PianoRollComponent,
     NetworkingComponent,
@@ -232,7 +231,7 @@ export class AppComponent implements AfterViewInit {
         const player = deck === 'A' ? this.audioPlayerARef()?.nativeElement : this.audioPlayerBRef()?.nativeElement;
         if (!player) return;
     
-        if (player.src !== deckState().track?.url) {
+    if (player.src !== deckState().track?.url) {
           player.src = deckState().track.url;
           player.load();
         }
@@ -251,7 +250,7 @@ export class AppComponent implements AfterViewInit {
         if (playlist.length === 0) return;
     
         let nextTrackIndex;
-        const currentTrackUrl = deckState().track?.url;
+    const currentTrackUrl = deckState().track?.url;
         const currentTrackIndex = playlist.findIndex(t => t.url === currentTrackUrl);
     
         if (this.shuffle()) {
@@ -382,7 +381,7 @@ export class AppComponent implements AfterViewInit {
         } else if (target === 'A') {
           this.deckA.update(d => ({ ...d, track: d.track ? { ...d.track, albumArtUrl: imageUrl } : null }));
         } else if (target === 'B') {
-          this.deckB.update(d => ({ ...d, track: { ...d.track, albumArtUrl: imageUrl } }));
+          this.deckB.update(d => ({ ...d, track: d.track ? { ...d.track, albumArtUrl: imageUrl } : null }));
         }
         this.showApplyAlbumArtModal.set(false);
         this.imageToApplyAsAlbumArt.set(null);
