@@ -61,6 +61,19 @@ export class AppComponent implements AfterViewInit {
     ];
     currentTheme = this.userContextService.lastUsedTheme;
 
+    // View-specific theme overrides for distinct color schemes per feature
+    private VIEW_THEMES: Record<string, AppTheme> = {
+        dj: { name: 'DJ Neon', primary: '#00e5ff', accent: '#ff3ec8', neutral: '#0b0e14', purple: '#7a5cff', red: '#ff4d4d', blue: '#00e5ff' },
+        'piano-roll': { name: 'Piano Teal', primary: '#00c2a8', accent: '#ffd166', neutral: '#0d1117', purple: '#6a5acd', red: '#ef476f', blue: '#118ab2' },
+        'studio-interface': { name: 'Studio Gold', primary: '#f6c177', accent: '#9ccfd8', neutral: '#0e0e10', purple: '#c4a7e7', red: '#eb6f92', blue: '#31748f' },
+    };
+
+    activeTheme = computed<AppTheme>(() => {
+        const mode = this.mainViewMode();
+        const override = this.VIEW_THEMES[mode];
+        return override || this.currentTheme() || this.THEMES[0];
+    });
+
     // Main View Management
     mainViewMode = this.userContextService.mainViewMode;
     
@@ -123,12 +136,12 @@ export class AppComponent implements AfterViewInit {
     selectedArtistProfile = signal<any>(null);
 
     // Computed UI classes
-    mainBorderClass = computed(() => `border-[${this.currentTheme()?.primary}]`);
-    mainTextColorClass = computed(() => `text-[${this.currentTheme()?.primary}]`);
-    mainBgClass = computed(() => `bg-[${this.currentTheme()?.primary}]/80`);
-    mainHoverBgClass = computed(() => `hover:bg-[${this.currentTheme()?.primary}]/20`);
-    djBorderClass = computed(() => `border-[${this.currentTheme()?.accent}]/50`);
-    djTextColorClass = computed(() => `text-[${this.currentTheme()?.accent}]`);
+    mainBorderClass = computed(() => `border-[${this.activeTheme().primary}]`);
+    mainTextColorClass = computed(() => `text-[${this.activeTheme().primary}]`);
+    mainBgClass = computed(() => `bg-[${this.activeTheme().primary}]/80`);
+    mainHoverBgClass = computed(() => `hover:bg-[${this.activeTheme().primary}]/20`);
+    djBorderClass = computed(() => `border-[${this.activeTheme().accent}]/50`);
+    djTextColorClass = computed(() => `text-[${this.activeTheme().accent}]`);
 
     // Master EQ Settings
     eqSettings = signal<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
