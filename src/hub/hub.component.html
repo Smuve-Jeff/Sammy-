@@ -1,9 +1,82 @@
-<h2>Game Hub</h2>
-<div class="game-grid">
-    <div *ngFor="let game of games()" class="game-card" (click)="selectGame(game.url)">
-      <img [src]="game.image" alt="{{ game.name }}" class="game-image" />
-      <div class="game-info">
-        <h3 class="game-title">{{ game.name }}</h3>
-      </div>
+<div class="hub-shell">
+  <header class="hub-header">
+    <div class="brand">Tha Spot</div>
+    <div class="status">
+      <span class="pill">Online</span>
+      <span class="divider">|</span>
+      <button class="action">Create Duel</button>
+      <button class="action">Create Team</button>
     </div>
+  </header>
+
+  <div class="hub-content">
+    <aside class="filters">
+      <div class="filter-group">
+        <label>Search</label>
+        <input placeholder="Find a game..." />
+      </div>
+      <div class="filter-group">
+        <label>Genre</label>
+        <select>
+          <option>All</option>
+          <option>Shooter</option>
+          <option>Racing</option>
+          <option>Strategy</option>
+          <option>Arena</option>
+          <option>Runner</option>
+          <option>Puzzle</option>
+          <option>Rhythm</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Sort</label>
+        <select>
+          <option>Trending</option>
+          <option>Popular</option>
+          <option>Newest</option>
+          <option>Rating</option>
+        </select>
+      </div>
+    </aside>
+
+    <section class="game-grid">
+      <div *ngFor="let game of games()" class="game-card" (click)="selectGame(game.url)">
+        <div class="media">
+          <img [src]="game.image" alt="{{ game.name }}" class="game-image" />
+          <video *ngIf="game.previewVideo" class="game-preview" [src]="game.previewVideo" muted loop playsinline></video>
+        </div>
+        <div class="game-info">
+          <div class="top">
+            <h3 class="game-title">{{ game.name }}</h3>
+            <div class="meta">
+              <span class="rating" *ngIf="game.rating">★ {{ game.rating | number:'1.1-1' }}</span>
+              <span class="players" *ngIf="game.playersOnline">● {{ game.playersOnline }}</span>
+            </div>
+          </div>
+          <div class="tags" *ngIf="game.tags?.length">
+            <span class="tag" *ngFor="let t of game.tags">{{ t }}</span>
+          </div>
+          <div class="actions">
+            <button class="play">Play</button>
+            <button class="challenge" *ngIf="game.modes?.includes('duel')">Challenge</button>
+            <button class="team" *ngIf="game.modes?.includes('team')">Team</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="activity">
+      <h4>Live Activity</h4>
+      <ul>
+        <li>Neon Arena: 2v2 forming...</li>
+        <li>Chess: duel invite pending</li>
+        <li>Rhythm Rumble: tournament starting</li>
+      </ul>
+    </aside>
   </div>
+
+  <div class="player" *ngIf="selectedGameUrl">
+    <button class="close" (click)="closeGame()">Close</button>
+    <iframe [src]="selectedGameUrl" frameborder="0"></iframe>
+  </div>
+</div>
