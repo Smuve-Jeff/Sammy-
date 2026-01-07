@@ -12,6 +12,7 @@ import { PianoRollComponent } from './components/piano-roll/piano-roll.component
 import { NetworkingComponent } from './components/networking/networking.component';
 import { ProfileEditorComponent } from './components/profile-editor/profile-editor.component';
 import { HubComponent } from '../hub/hub.component';
+import { StudioInterfaceComponent } from './components/studio-interface/studio-interface.component';
 import { AuthService } from './services/auth.service';
 
 interface Track {
@@ -39,7 +40,8 @@ interface DeckState {
     PianoRollComponent,
     NetworkingComponent,
     ProfileEditorComponent,
-    HubComponent
+    HubComponent,
+    StudioInterfaceComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
@@ -53,9 +55,9 @@ export class AppComponent implements AfterViewInit {
 
     // Theming
     readonly THEMES: AppTheme[] = [
-        { name: 'Green Vintage', primary: '#34d399', accent: '#a7f3d0', neutral: '#111827', purple: '#34d399', red: '#34d399', blue: '#34d399' },
-        { name: 'Blue Retro', primary: '#60a5fa', accent: '#93c5fd', neutral: '#1e3a8a', purple: '#60a5fa', red: '#60a5fa', blue: '#60a5fa' },
-        { name: 'Red Glitch', primary: '#f87171', accent: '#fca5a5', neutral: '#4c0519', purple: '#f87171', red: '#f87171', blue: '#f87171' },
+        { name: 'Soft Sage', primary: '#9fb8ad', accent: '#c9d6cf', neutral: '#0f172a', purple: '#c7b9ff', red: '#f4b6c2', blue: '#9ad0ec' },
+        { name: 'Dusky Lavender', primary: '#b8a3c2', accent: '#d8c7df', neutral: '#101828', purple: '#c5a6ff', red: '#f2c6c2', blue: '#a1c4fd' },
+        { name: 'Midnight Sand', primary: '#c8b6a6', accent: '#e6d5c3', neutral: '#111827', purple: '#b4a1ff', red: '#f0a8a0', blue: '#8dc5d6' },
     ];
     currentTheme = this.userContextService.lastUsedTheme;
 
@@ -333,7 +335,7 @@ export class AppComponent implements AfterViewInit {
 
     // --- UI Toggles & View Changers ---
     toggleMainViewMode(): void {
-        const modes = ['player', 'dj', 'piano-roll', 'image-editor', 'video-editor', 'networking', 'tha-spot'];
+        const modes = ['player', 'dj', 'piano-roll', 'image-editor', 'video-editor', 'networking', 'tha-spot', 'studio-interface'];
         const currentIndex = modes.indexOf(this.mainViewMode());
         const nextIndex = (currentIndex + 1) % modes.length;
         this.userContextService.setMainViewMode(modes[nextIndex] as MainViewMode);

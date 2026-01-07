@@ -38,6 +38,12 @@ export class AudioEngineService {
   private masterGain: GainNode;
   private analyser: AnalyserNode;
   private compressor: DynamicsCompressorNode;
+  private limiter: DynamicsCompressorNode;
+  private limiterLookahead: DelayNode;
+  private autoTuneDelay: DelayNode;
+  private autoTuneFilter: BiquadFilterNode;
+  private autoTuneWet: GainNode;
+  private recordingDestination: MediaStreamAudioDestinationNode | null = null;
 
   // FX buses
   private reverbConvolver: ConvolverNode;
@@ -68,6 +74,30 @@ export class AudioEngineService {
     this.masterGain = this.ctx.createGain();
     this.masterGain.gain.value = 0.9;
     this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.value = -18;
+    this.compressor.ratio.value = 3;
+    this.compressor.attack.value = 0.003;
+    this.compressor.release.value = 0.2;
+
+    this.limiter = this.ctx.createDynamicsCompressor();
+    this.limiter.threshold.value = -1;
+    this.limiter.knee.value = 0;
+    this.limiter.ratio.value = 20;
+    this.limiter.attack.value = 0.001;
+    this.limiter.release.value = 0.08;
+
+    this.limiterLookahead = this.ctx.createDelay(0.01);
+    this.limiterLookahead.delayTime.value = 0.004;
+
+    this.autoTuneDelay = this.ctx.createDelay(0.1);
+    this.autoTuneDelay.delayTime.value = 0.02;
+    this.autoTuneFilter = this.ctx.createBiquadFilter();
+    this.autoTuneFilter.type = 'bandpass';
+    this.autoTuneFilter.frequency.value = 440;
+    this.autoTuneFilter.Q.value = 5;
+    this.autoTuneWet = this.ctx.createGain();
+    this.autoTuneWet.gain.value = 0;
+
     this.analyser = this.ctx.createAnalyser();
 
     // FX setup
@@ -91,8 +121,18 @@ export class AudioEngineService {
     this.reverbWet.connect(this.compressor);
     this.delayWet.connect(this.compressor);
     this.masterGain.connect(this.compressor);
-    this.compressor.connect(this.analyser);
+
+    // master dynamics chain
+    this.compressor.connect(this.limiterLookahead);
+    this.limiterLookahead.connect(this.limiter);
+    this.limiter.connect(this.analyser);
     this.analyser.connect(this.ctx.destination);
+
+    // Auto-tune style parallel bus (delay + filter blend)
+    this.compressor.connect(this.autoTuneDelay);
+    this.autoTuneDelay.connect(this.autoTuneFilter);
+    this.autoTuneFilter.connect(this.autoTuneWet);
+    this.autoTuneWet.connect(this.limiter);
 
     // basic small impulse for convolver placeholder
     this.loadDefaultImpulse();
@@ -207,4 +247,86 @@ export class AudioEngineService {
   }
 
   midiToFreq(midi: number) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+  setMasterOutputLevel(normalized: number) {
+    const value = Math.min(Math.max(normalized, 0), 1);
+    this.masterGain.gain.setTargetAtTime(value, this.ctx.currentTime, 0.01);
+  }
+
+  connectExternalInput(node: AudioNode) {
+    node.connect(this.masterGain);
+  }
+
+  disconnectExternalInput(node: AudioNode) {
+    try {
+      node.disconnect(this.masterGain);
+    } catch (err) {
+      console.warn('Failed to disconnect external input', err);
+    }
+  }
+
+  configureCompressor(params: { threshold?: number; ratio?: number; attack?: number; release?: number; enabled?: boolean }) {
+    const { threshold, ratio, attack, release, enabled } = params;
+    const active = enabled !== false;
+    if (threshold !== undefined) {
+      this.compressor.threshold.setTargetAtTime(threshold, this.ctx.currentTime, 0.01);
+    }
+    if (ratio !== undefined) {
+      this.compressor.ratio.setTargetAtTime(active ? ratio : 1, this.ctx.currentTime, 0.01);
+    } else if (!active) {
+      this.compressor.ratio.setTargetAtTime(1, this.ctx.currentTime, 0.01);
+    }
+    if (attack !== undefined) {
+      this.compressor.attack.setTargetAtTime(Math.max(attack, 0.0001), this.ctx.currentTime, 0.01);
+    }
+    if (release !== undefined) {
+      this.compressor.release.setTargetAtTime(Math.max(release, 0.0001), this.ctx.currentTime, 0.01);
+    }
+  }
+
+  configureLimiter(params: { ceiling?: number; lookahead?: number; release?: number; enabled?: boolean }) {
+    const { ceiling, lookahead, release, enabled } = params;
+    const active = enabled !== false;
+    if (ceiling !== undefined) {
+      this.limiter.threshold.setTargetAtTime(active ? ceiling : 0, this.ctx.currentTime, 0.01);
+    } else if (!active) {
+      this.limiter.threshold.setTargetAtTime(0, this.ctx.currentTime, 0.01);
+    }
+    if (release !== undefined) {
+      this.limiter.release.setTargetAtTime(Math.max(release, 0.0001), this.ctx.currentTime, 0.01);
+    }
+    if (lookahead !== undefined) {
+      this.limiterLookahead.delayTime.setTargetAtTime(Math.min(Math.max(lookahead, 0), 0.01), this.ctx.currentTime, 0.01);
+    }
+  }
+
+  configureAutoTune(params: { mix?: number; retune?: number; humanize?: number; formant?: number; enabled?: boolean }) {
+    const { mix, retune, humanize, formant, enabled } = params;
+    const active = enabled !== false;
+    if (mix !== undefined) {
+      this.autoTuneWet.gain.setTargetAtTime(active ? mix : 0, this.ctx.currentTime, 0.01);
+    } else if (!active) {
+      this.autoTuneWet.gain.setTargetAtTime(0, this.ctx.currentTime, 0.01);
+    }
+    if (retune !== undefined) {
+      const delay = Math.max(0.001, (100 - retune) / 5000);
+      this.autoTuneDelay.delayTime.setTargetAtTime(delay, this.ctx.currentTime, 0.01);
+    }
+    if (humanize !== undefined) {
+      const gain = Math.max(0, Math.min(1, humanize / 100));
+      this.autoTuneWet.gain.setTargetAtTime(active ? gain : 0, this.ctx.currentTime, 0.01);
+    }
+    if (formant !== undefined) {
+      const centerFreq = 440 * Math.pow(2, formant / 12);
+      this.autoTuneFilter.frequency.setTargetAtTime(centerFreq, this.ctx.currentTime, 0.01);
+    }
+  }
+
+  getMasterStream(): MediaStreamAudioDestinationNode {
+    if (!this.recordingDestination) {
+      this.recordingDestination = this.ctx.createMediaStreamDestination();
+      this.limiter.connect(this.recordingDestination);
+    }
+    return this.recordingDestination;
+  }
 }
