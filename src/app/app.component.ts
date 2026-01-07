@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { UserContextService, AppTheme, MainViewMode } from './services/user-context.service';
 import { AiService } from './services/ai.service';
 import { EqPanelComponent } from './components/eq-panel/eq-panel.component';
-import { MatrixBackgroundComponent } from './components/matrix-background/matrix-background.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { ImageEditorComponent } from './components/image-editor/image-editor.component';
 import { AudioVisualizerComponent } from './components/audio-visualizer/audio-visualizer.component';
@@ -34,7 +33,6 @@ interface DeckState {
     CommonModule,
     FormsModule,
     EqPanelComponent,
-    MatrixBackgroundComponent,
     ChatbotComponent,
     ImageEditorComponent,
     AudioVisualizerComponent,
