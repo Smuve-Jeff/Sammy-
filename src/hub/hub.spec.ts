@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { HubComponent } from './hub';
+import { HubComponent } from './hub.component';
 
 describe('HubComponent', () => {
   let component: HubComponent;
@@ -8,9 +7,8 @@ describe('HubComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ HubComponent ]
-    })
-    .compileComponents();
+      imports: [HubComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(HubComponent);
     component = fixture.componentInstance;
