@@ -1,4 +1,4 @@
-import { Component, signal, computed, effect, inject, ChangeDetectorRef, ElementRef, viewChild, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, signal, computed, effect, inject, ChangeDetectorRef, ElementRef, viewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserContextService, AppTheme, MainViewMode } from '../services/user-context.service';
@@ -232,7 +232,7 @@ export class AppComponent implements AfterViewInit {
         const player = deck === 'A' ? this.audioPlayerARef()?.nativeElement : this.audioPlayerBRef()?.nativeElement;
         if (!player) return;
     
-        if (player.src !== deckState().track.url) {
+        if (player.src !== deckState().track?.url) {
           player.src = deckState().track.url;
           player.load();
         }
@@ -251,7 +251,7 @@ export class AppComponent implements AfterViewInit {
         if (playlist.length === 0) return;
     
         let nextTrackIndex;
-        const currentTrackUrl = deckState().track.url;
+        const currentTrackUrl = deckState().track?.url;
         const currentTrackIndex = playlist.findIndex(t => t.url === currentTrackUrl);
     
         if (this.shuffle()) {
@@ -380,7 +380,7 @@ export class AppComponent implements AfterViewInit {
           track.albumArtUrl = imageUrl;
           this.playlist.update(list => [...list]); // Trigger change detection
         } else if (target === 'A') {
-          this.deckA.update(d => ({ ...d, track: { ...d.track, albumArtUrl: imageUrl } }));
+          this.deckA.update(d => ({ ...d, track: d.track ? { ...d.track, albumArtUrl: imageUrl } : null }));
         } else if (target === 'B') {
           this.deckB.update(d => ({ ...d, track: { ...d.track, albumArtUrl: imageUrl } }));
         }
