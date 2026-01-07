@@ -13,11 +13,11 @@
     <aside class="filters">
       <div class="filter-group">
         <label>Search</label>
-        <input placeholder="Find a game..." />
+        <input placeholder="Find a game..." [(ngModel)]="query()" (ngModelChange)="query.set($event)" />
       </div>
       <div class="filter-group">
         <label>Genre</label>
-        <select>
+        <select [(ngModel)]="genre()" (ngModelChange)="genre.set($event)">
           <option>All</option>
           <option>Shooter</option>
           <option>Racing</option>
@@ -30,7 +30,7 @@
       </div>
       <div class="filter-group">
         <label>Sort</label>
-        <select>
+        <select [(ngModel)]="sort()" (ngModelChange)="sort.set($event)">
           <option>Trending</option>
           <option>Popular</option>
           <option>Newest</option>
@@ -40,7 +40,7 @@
     </aside>
 
     <section class="game-grid">
-      <div *ngFor="let game of games()" class="game-card" (click)="selectGame(game.url)">
+      <div *ngFor="let game of filteredGames()" class="game-card" (click)="selectGame(game.url)">
         <div class="media">
           <img [src]="game.image" alt="{{ game.name }}" class="game-image" />
           <video *ngIf="game.previewVideo" class="game-preview" [src]="game.previewVideo" muted loop playsinline></video>
