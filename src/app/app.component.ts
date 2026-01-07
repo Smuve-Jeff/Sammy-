@@ -232,7 +232,7 @@ export class AppComponent implements AfterViewInit {
         const player = deck === 'A' ? this.audioPlayerARef()?.nativeElement : this.audioPlayerBRef()?.nativeElement;
         if (!player) return;
     
-        if (player.src !== deckState().track.url) {
+        if (player.src !== deckState().track?.url) {
           player.src = deckState().track.url;
           player.load();
         }
