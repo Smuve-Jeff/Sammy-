@@ -251,7 +251,7 @@ export class AppComponent implements AfterViewInit {
         if (playlist.length === 0) return;
     
         let nextTrackIndex;
-        const currentTrackUrl = deckState().track.url;
+        const currentTrackUrl = deckState().track?.url;
         const currentTrackIndex = playlist.findIndex(t => t.url === currentTrackUrl);
     
         if (this.shuffle()) {
