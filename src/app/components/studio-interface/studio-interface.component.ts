@@ -1,13 +1,10 @@
 import { Component, ChangeDetectionStrategy, signal, computed, inject, effect, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AudioEngineService } from '../../services/audio-engine.service';
-import { MicrophoneRoutingService, StudioMicChannelConfig } from '../../services/microphone-routing.service';
+import { MicrophoneRoutingService, ConnectionType, StudioMicChannelConfig } from '../../services/microphone-routing.service';
 import { RecordingFormat, StudioRecordingService } from '../../services/studio-recording.service';
 import { UserContextService, MainViewMode } from '../../services/user-context.service';
 
-const CONNECTION_TYPES = ['xlr', 'midi', 'usb'] as const;
-type ConnectionType = typeof CONNECTION_TYPES[number];
+const CONNECTION_TYPES = ['xlr', 'midi', 'usb', 'line', 'bluetooth', 'wifi'] as const;
 
 type QualityFlag = keyof MasterQualityProfile;
 
@@ -56,8 +53,6 @@ interface PluginModule {
 
 @Component({
   selector: 'app-studio-interface',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
   templateUrl: './studio-interface.component.html',
   styleUrls: ['./studio-interface.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -371,6 +366,8 @@ export class StudioInterfaceComponent implements OnDestroy {
       noiseGate: channel.noiseGate,
       distortionGuard: channel.distortionGuard,
       muted: channel.muted,
+      category: channel.category,
+      armed: channel.armed
     };
     this.micRouter.ensureChannel(config).catch(console.warn);
     this.micRouter.setChannelLevel(channel.id, channel.level);

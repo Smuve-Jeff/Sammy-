@@ -1,16 +1,12 @@
 import { Component, ChangeDetectionStrategy, inject, signal, input, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AppTheme } from '../../services/user-context.service';
 import { UserProfileService, UserProfile } from '../../services/user-profile.service';
 import { AuthService, AuthCredentials } from '../../services/auth.service';
 
 @Component({
   selector: 'app-profile-editor',
-  standalone: true,
   templateUrl: './profile-editor.component.html',
   styleUrls: ['./profile-editor.component.css'],
-  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileEditorComponent {

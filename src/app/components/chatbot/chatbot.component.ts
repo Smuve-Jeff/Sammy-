@@ -1,6 +1,4 @@
 import { Component, ChangeDetectionStrategy, signal, output, ElementRef, viewChild, input, inject, computed, effect, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AiService, GenerateContentResponse, Content, Type, Tool } from '../../services/ai.service';
 // FIX: Update AppTheme and Track imports to break circular dependency
 import { AppTheme, MainViewMode, Track, UserContextService } from '../../services/user-context.service';
@@ -24,10 +22,8 @@ interface ChatMessage {
 
 @Component({
   selector: 'app-chatbot',
-  standalone: true,
   templateUrl: './chatbot.component.html',
   styleUrls: ['./chatbot.component.css'],
-  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatbotComponent implements OnInit, OnDestroy {

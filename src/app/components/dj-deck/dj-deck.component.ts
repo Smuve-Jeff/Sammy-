@@ -1,6 +1,4 @@
 import { Component, ChangeDetectionStrategy, signal, input, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AppTheme, DeckState, initialDeckState } from '../../services/user-context.service';
 import { SampleLibraryComponent } from '../sample-library/sample-library.component';
 import { AudioEngineService } from '../../services/audio-engine.service';
@@ -10,8 +8,6 @@ import { LibraryService } from '../../services/library.service';
 
 @Component({
   selector: 'app-dj-deck',
-  standalone: true,
-  imports: [CommonModule, FormsModule, SampleLibraryComponent],
   templateUrl: './dj-deck.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

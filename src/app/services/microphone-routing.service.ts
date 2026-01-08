@@ -1,344 +1,218 @@
-import { Injectable } from '@angular/core';
-import { AudioEngineService } from './audio-engine.service';
+import { Injectable, computed, effect, signal } from '@angular/core';
 
-export type StudioConnectionType = 'xlr' | 'midi' | 'usb';
+// TODO: Formalize into a proper interface and move to a shared location
+export type ConnectionType = 'usb' | 'xlr' | 'line' | 'bluetooth' | 'wifi' | 'midi';
+export type ChannelCategory = 'mic' | 'instrument' | 'aux' | 'master' | 'vocal' | 'room' | 'custom';
+export type RecordingFormat = 'wav' | 'mp3' | 'flac';
+
+export interface QualityProfile {
+  sampleRate: 44100 | 48000 | 88200 | 96000;
+  bitDepth: 16 | 24 | 32;
+  // Global override for phantom power
+  phantomPowerBus: boolean;
+  // Toggle individual quality features
+  autoGain: boolean;
+  noiseSuppression: boolean;
+  echoCancellation: boolean;
+}
+
+export interface Channel {
+  id: string;
+  label: string;
+  category: ChannelCategory;
+  connectionType: ConnectionType;
+  level: number; // 0-100
+  pan: number; // -50 to 50
+  muted: boolean;
+  armed: boolean; // Is it armed for recording?
+  phantomPower: boolean;
+  noiseGate: number; // 0-100 threshold
+  distortionGuard: number; // 0-100 threshold
+  latencyMs: number; // Manually adjusted latency
+}
+
+export interface RecordedTake {
+  id: string;
+  name: string;
+  format: RecordingFormat;
+  timestamp: Date;
+  durationMs: number;
+  channelId: string;
+  // Emulated file path for download
+  blobUrl: string; 
+}
 
 export interface StudioMicChannelConfig {
   id: string;
   label: string;
   level: number;
   pan: number;
-  connectionType: StudioConnectionType;
+  connectionType: ConnectionType;
   phantomPower: boolean;
   latencyMs: number;
   noiseGate: number;
   distortionGuard: number;
   muted: boolean;
+  category: ChannelCategory;
+  armed: boolean;
 }
 
-type MeterListener = (id: string, level: number) => void;
 
-interface ChannelGraph {
-  config?: StudioMicChannelConfig;
-  stream?: MediaStream;
-  source?: AudioNode;
-  delay: DelayNode;
-  gate: DynamicsCompressorNode;
-  shaper: WaveShaperNode;
-  gain: GainNode;
-  analyser: AnalyserNode;
-  pan: StereoPannerNode;
-  meterBuffer: Float32Array;
-  lastLevel: number;
-  muted: boolean;
-  phantomActive: boolean;
-}
+// --- Mock State & Service ---
 
-@Injectable({ providedIn: 'root' })
+const MOCK_CHANNELS: Channel[] = [
+  { id: 'ch1', label: 'Lead Vocals', category: 'vocal', connectionType: 'xlr', level: 75, pan: 0, muted: false, armed: true, phantomPower: true, noiseGate: 20, distortionGuard: 80, latencyMs: 5 },
+  { id: 'ch2', label: 'Rhythm Guitar', category: 'instrument', connectionType: 'line', level: 60, pan: -25, muted: false, armed: true, phantomPower: false, noiseGate: 10, distortionGuard: 90, latencyMs: 12 },
+  { id: 'ch3', label: 'Synth Bass', category: 'instrument', connectionType: 'usb', level: 85, pan: 0, muted: false, armed: false, phantomPower: false, noiseGate: 5, distortionGuard: 95, latencyMs: 8 },
+  { id: 'ch4', label: 'Guest Mic', category: 'room', connectionType: 'wifi', level: 65, pan: 25, muted: true, armed: false, phantomPower: false, noiseGate: 25, distortionGuard: 75, latencyMs: 18 },
+];
+
+const MOCK_QUALITY: QualityProfile = {
+  sampleRate: 48000,
+  bitDepth: 24,
+  phantomPowerBus: false,
+  autoGain: true,
+  noiseSuppression: true,
+  echoCancellation: false,
+};
+
+@Injectable({
+  providedIn: 'root'
+})
 export class MicrophoneRoutingService {
-  private readonly ctx = this.audioEngine.getContext();
-  private readonly channels = new Map<string, ChannelGraph>();
-  private phantomBusEnabled = false;
-  private noiseSuppressionEnabled = true;
-  private meterListeners = new Set<MeterListener>();
-  private meterInterval: number | null = null;
+  // --- Signals for reactive state management ---
+  micChannels = signal<Channel[]>(MOCK_CHANNELS);
+  qualityProfile = signal<QualityProfile>(MOCK_QUALITY);
 
-  constructor(private readonly audioEngine: AudioEngineService) {}
-
-  async ensureChannel(config: StudioMicChannelConfig): Promise<void> {
-    const chain = this.getOrCreateChain(config.id);
-    chain.config = config;
-    chain.phantomActive = config.phantomPower || this.phantomBusEnabled;
-
-    if (config.connectionType === 'midi') {
-      // MIDI instruments are virtual; create a silent constant source to keep graph alive.
-      if (!chain.source) {
-        const constant = this.ctx.createConstantSource();
-        constant.offset.value = 0;
-        constant.connect(chain.delay);
-        constant.start();
-        chain.source = constant;
-      }
-      return;
-    }
-
-    // Already have a live stream
-    if (chain.stream) {
-      return;
-    }
-
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      console.warn('Microphone capture is not supported in this runtime environment.');
-      return;
-    }
-
-    try {
-      chain.stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: this.noiseSuppressionEnabled,
-          autoGainControl: false,
-          latency: Math.max(0.001, config.latencyMs / 1000),
-        },
-      });
-      const source = this.ctx.createMediaStreamSource(chain.stream);
-      source.connect(chain.delay);
-      chain.source = source;
-      await this.ctx.resume();
-    } catch (error) {
-      console.warn(`Unable to access microphone for channel "${config.label}"`, error);
-    }
-  }
-
-  subscribeToMeters(listener: MeterListener): () => void {
-    this.meterListeners.add(listener);
-    this.startMeterLoop();
-    return () => {
-      this.meterListeners.delete(listener);
-      if (this.meterListeners.size === 0) {
-        this.stopMeterLoop();
-      }
-    };
-  }
-
-  setChannelLevel(id: string, percent: number): void {
-    const chain = this.channels.get(id);
-    if (!chain) return;
-    chain.lastLevel = this.toGain(percent);
-    if (!chain.muted) {
-      chain.gain.gain.setTargetAtTime(chain.lastLevel, this.ctx.currentTime, 0.01);
-    }
-  }
-
-  setChannelPan(id: string, percent: number): void {
-    const chain = this.channels.get(id);
-    if (!chain) return;
-    const normalized = Math.max(-1, Math.min(1, percent / 50));
-    chain.pan.pan.setTargetAtTime(normalized, this.ctx.currentTime, 0.01);
-  }
-
-  setChannelLatency(id: string, latencyMs: number): void {
-    const chain = this.channels.get(id);
-    if (!chain) return;
-    const seconds = Math.max(0, latencyMs / 1000);
-    chain.delay.delayTime.setTargetAtTime(seconds, this.ctx.currentTime, 0.01);
-    if (chain.config) {
-      chain.config.latencyMs = latencyMs;
-    }
-  }
-
-  setChannelNoiseGate(id: string, percent: number): void {
-    const chain = this.channels.get(id);
-    if (!chain) return;
-    const threshold = -80 + (percent / 100) * 40; // -80dB (open) -> -40dB (tight gate)
-    chain.gate.threshold.setTargetAtTime(threshold, this.ctx.currentTime, 0.05);
-    chain.gate.ratio.setTargetAtTime(20, this.ctx.currentTime, 0.05);
-    chain.gate.attack.setTargetAtTime(0.005, this.ctx.currentTime, 0.05);
-    chain.gate.release.setTargetAtTime(0.1, this.ctx.currentTime, 0.05);
-  }
-
-  setChannelDistortionGuard(id: string, percent: number): void {
-    const chain = this.channels.get(id);
-    if (!chain) return;
-    chain.shaper.curve = this.createDistortionCurve(percent / 100);
-  }
-
-  setMuted(id: string, muted: boolean): void {
-    const chain = this.channels.get(id);
-    if (!chain) return;
-    chain.muted = muted;
-    const target = muted ? 0 : chain.lastLevel;
-    chain.gain.gain.setTargetAtTime(target, this.ctx.currentTime, 0.01);
-    if (!muted && chain.config) {
-      this.ensureChannel(chain.config);
-    }
-  }
-
-  setChannelPhantomPower(id: string, enabled: boolean): void {
-    const chain = this.channels.get(id);
-    if (!chain || !chain.config) return;
-    chain.config.phantomPower = enabled;
-    chain.phantomActive = enabled || this.phantomBusEnabled;
-  }
-
-  setPhantomPowerBus(enabled: boolean): void {
-    this.phantomBusEnabled = enabled;
-    this.channels.forEach(chain => {
-      chain.phantomActive = enabled || chain.config?.phantomPower === true;
+  constructor() {
+    // Example of an effect that reacts to state changes
+    effect(() => {
+      console.log(`Channels updated: ${this.micChannels().length} channels`);
+      this.micChannels().forEach(ch => this.updateMediaStreamForChannel(ch));
+    });
+    effect(() => {
+      console.log(`Quality profile changed: Sample Rate ${this.qualityProfile().sampleRate}`);
+      this.micChannels().forEach(ch => this.updateMediaStreamForChannel(ch));
     });
   }
 
-  setNoiseSuppression(enabled: boolean): void {
-    this.noiseSuppressionEnabled = enabled;
-    // Existing streams keep previous constraints; future requests will use the new value.
+  // --- Channel Management ---
+  addChannel(channel: Omit<Channel, 'id'>): void {
+    const newChannel: Channel = { ...channel, id: `ch${Date.now()}` };
+    this.micChannels.update(channels => [...channels, newChannel]);
   }
 
-  async setRecordingActive(active: boolean): Promise<void> {
-    if (active) {
-      await this.ctx.resume();
-      for (const chain of this.channels.values()) {
-        if (chain.config && !chain.config.muted) {
-          this.ensureChannel(chain.config);
+  removeChannel(channelId: string): void {
+    this.micChannels.update(channels => channels.filter(c => c.id !== channelId));
+  }
+
+  updateChannel(channelId: string, updates: Partial<Channel>): void {
+    this.micChannels.update(channels => 
+      channels.map(c => c.id === channelId ? { ...c, ...updates } : c)
+    );
+  }
+
+  // --- Quality Profile Management ---
+  updateQualityProfile(updates: Partial<QualityProfile>): void {
+    this.qualityProfile.update(profile => ({ ...profile, ...updates }));
+  }
+
+  // --- Signal Processing & Media Streams ---
+  // This is where the Web Audio API would be integrated.
+  private async updateMediaStreamForChannel(channel: Channel) {
+    // In a real app, you would manage MediaStream instances here.
+    // For this mock, we'll just log the intended operations.
+
+    const config = this.qualityProfile();
+    const constraints: MediaTrackConstraints = {
+      sampleRate: config.sampleRate,
+      sampleSize: config.bitDepth,
+      echoCancellation: config.echoCancellation,
+      noiseSuppression: config.noiseSuppression,
+      autoGainControl: config.autoGain,
+    };
+
+    console.log(`[Mock] Applying constraints for ${channel.label}:`, constraints);
+
+    if (channel.phantomPower || config.phantomPowerBus) {
+      console.log(`[Mock] Phantom power enabled for ${channel.label}`);
+    }
+    
+    // Here you would create/update an AudioContext graph with nodes for:
+    // - Gain (for level)
+    // - Panner (for pan)
+    // - Noise Gate (using a DynamicsCompressorNode or custom processor)
+    // - Distortion Guard (using a WaveShaperNode or custom logic)
+  }
+  
+  // --- Computed Values for UI ---
+  getArmedChannels = computed(() => this.micChannels().filter(c => c.armed));
+
+  // --- Methods for StudioInterfaceComponent ---
+  setPhantomPowerBus(value: boolean) {
+    this.qualityProfile.update(p => ({...p, phantomPowerBus: value}));
+  }
+
+  setNoiseSuppression(value: boolean) {
+    this.qualityProfile.update(p => ({...p, noiseSuppression: value}));
+  }
+
+  subscribeToMeters(callback: (id: string, level: number) => void): () => void {
+    const interval = setInterval(() => {
+      this.micChannels().forEach(c => {
+        if (!c.muted) {
+          const level = Math.random() * c.level / 100;
+          callback(c.id, level);
         }
-      }
-      return;
-    }
-
-    if (!this.hasLiveChannels()) {
-      try {
-        await this.ctx.suspend();
-      } catch (error) {
-        console.warn('Unable to suspend audio context', error);
-      }
-    }
+      });
+    }, 100);
+    return () => clearInterval(interval);
   }
 
-  setConnectionType(id: string, connectionType: StudioConnectionType): void {
-    const chain = this.getOrCreateChain(id);
-    if (chain.config) {
-      chain.config.connectionType = connectionType;
-    }
-    if (chain.stream) {
-      this.teardownStream(chain);
-      if (chain.config) {
-        this.ensureChannel(chain.config);
-      }
-    }
+  setChannelLevel(id: string, value: number) {
+    this.updateChannel(id, {level: value});
   }
 
-  disposeChannel(id: string): void {
-    const chain = this.channels.get(id);
-    if (!chain) return;
-    this.teardownStream(chain);
-    try {
-      chain.delay.disconnect();
-      chain.gate.disconnect();
-      chain.shaper.disconnect();
-      chain.gain.disconnect();
-      chain.analyser.disconnect();
-      chain.pan.disconnect();
-    } catch (error) {
-      console.warn('Failed to dispose channel graph', error);
+  setChannelPan(id: string, value: number) {
+    this.updateChannel(id, {pan: value});
+  }
+
+  setConnectionType(id: string, value: ConnectionType) {
+    this.updateChannel(id, {connectionType: value});
+  }
+
+  setChannelPhantomPower(id: string, value: boolean) {
+    this.updateChannel(id, {phantomPower: value});
+  }
+
+  setChannelLatency(id: string, value: number) {
+    this.updateChannel(id, {latencyMs: value});
+  }
+
+  setChannelNoiseGate(id: string, value: number) {
+    this.updateChannel(id, {noiseGate: value});
+  }
+
+  setChannelDistortionGuard(id: string, value: number) {
+    this.updateChannel(id, {distortionGuard: value});
+  }
+
+  setMuted(id: string, value: boolean) {
+    this.updateChannel(id, {muted: value});
+  }
+
+  disposeChannel(id: string) {
+    this.removeChannel(id);
+  }
+
+  async setRecordingActive(value: boolean) {
+    console.log('Recording active:', value);
+  }
+
+  async ensureChannel(config: Channel) {
+    const existing = this.micChannels().find(c => c.id === config.id);
+    if (!existing) {
+      this.micChannels.update(channels => [...channels, config]);
     }
-    this.channels.delete(id);
-  }
-
-  private teardownStream(chain: ChannelGraph): void {
-    if (chain.source) {
-      try {
-        chain.source.disconnect();
-      } catch {
-        /* noop */
-      }
-      chain.source = undefined;
-    }
-    if (chain.stream) {
-      chain.stream.getTracks().forEach(track => track.stop());
-      chain.stream = undefined;
-    }
-  }
-
-  private createDistortionCurve(amount: number): Float32Array {
-    const k = amount * 100;
-    const samples = 1024;
-    const curve = new Float32Array(samples);
-    const deg = Math.PI / 180;
-    for (let i = 0; i < samples; ++i) {
-      const x = (i * 2) / samples - 1;
-      curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
-    }
-    return curve;
-  }
-
-  private getOrCreateChain(id: string): ChannelGraph {
-    const existing = this.channels.get(id);
-    if (existing) {
-      return existing;
-    }
-
-    const delay = this.ctx.createDelay(1);
-    const gate = this.ctx.createDynamicsCompressor();
-    gate.threshold.value = -60;
-    gate.knee.value = 10;
-    gate.ratio.value = 20;
-    gate.attack.value = 0.005;
-    gate.release.value = 0.1;
-
-    const shaper = this.ctx.createWaveShaper();
-    shaper.curve = this.createDistortionCurve(0);
-
-    const gain = this.ctx.createGain();
-    gain.gain.value = 0;
-
-    const pan = this.ctx.createStereoPanner();
-
-    const analyser = this.ctx.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.4;
-    const meterBuffer = new Float32Array(analyser.fftSize);
-
-    delay.connect(gate).connect(shaper).connect(gain).connect(analyser).connect(pan);
-    this.audioEngine.connectExternalInput(pan);
-
-    const chain: ChannelGraph = {
-      delay,
-      gate,
-      shaper,
-      gain,
-      analyser,
-      pan,
-      meterBuffer,
-      lastLevel: 0.7,
-      muted: true,
-      phantomActive: false,
-    };
-
-    this.channels.set(id, chain);
-    return chain;
-  }
-
-  private startMeterLoop(): void {
-    if (this.meterInterval !== null) return;
-    const timerHost = typeof window !== 'undefined' ? window : globalThis;
-    this.meterInterval = timerHost.setInterval(() => this.emitMeterLevels(), 120) as unknown as number;
-  }
-
-  private stopMeterLoop(): void {
-    if (this.meterInterval === null) return;
-    const timerHost = typeof window !== 'undefined' ? window : globalThis;
-    timerHost.clearInterval(this.meterInterval);
-    this.meterInterval = null;
-  }
-
-  private emitMeterLevels(): void {
-    if (this.meterListeners.size === 0) {
-      return;
-    }
-    this.channels.forEach((chain, id) => {
-      chain.analyser.getFloatTimeDomainData(chain.meterBuffer);
-      let sum = 0;
-      for (let i = 0; i < chain.meterBuffer.length; i++) {
-        const sample = chain.meterBuffer[i];
-        sum += sample * sample;
-      }
-      const rms = Math.sqrt(sum / chain.meterBuffer.length);
-      const level = Math.min(1, rms * 4);
-      this.meterListeners.forEach(listener => listener(id, level));
-    });
-  }
-
-  private hasLiveChannels(): boolean {
-    for (const chain of this.channels.values()) {
-      if (!chain.muted) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private toGain(percent: number): number {
-    const normalized = Math.max(0, Math.min(100, percent)) / 100;
-    // Apply slight curve for finer resolution near zero.
-    return Math.pow(normalized, 1.4);
   }
 }

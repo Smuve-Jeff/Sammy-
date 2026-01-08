@@ -1,14 +1,11 @@
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
 // FIX: Update AppTheme import to break circular dependency
 import { AppTheme, EqBand, Enhancements } from '../../services/user-context.service';
 
 @Component({
   selector: 'app-eq-panel',
-  standalone: true,
   templateUrl: './eq-panel.component.html',
   styleUrls: ['./eq-panel.component.css'],
-  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EqPanelComponent {

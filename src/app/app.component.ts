@@ -1,7 +1,5 @@
 
 import { Component, signal, computed, effect, inject, ChangeDetectorRef, ElementRef, viewChild, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { UserContextService, AppTheme, MainViewMode } from './services/user-context.service';
 import { AiService } from './services/ai.service';
 import { EqPanelComponent } from './components/eq-panel/eq-panel.component';
@@ -11,7 +9,7 @@ import { AudioVisualizerComponent } from './components/audio-visualizer/audio-vi
 import { PianoRollComponent } from './components/piano-roll/piano-roll.component';
 import { NetworkingComponent } from './components/networking/networking.component';
 import { ProfileEditorComponent } from './components/profile-editor/profile-editor.component';
-import { HubComponent } from '../hub/hub.component';
+import { HubComponent } from './hub/hub.component';
 import { StudioInterfaceComponent } from './components/studio-interface/studio-interface.component';
 import { AuthService } from './services/auth.service';
 
@@ -29,20 +27,6 @@ interface DeckState {
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    EqPanelComponent,
-    ChatbotComponent,
-    ImageEditorComponent,
-    AudioVisualizerComponent,
-    PianoRollComponent,
-    NetworkingComponent,
-    ProfileEditorComponent,
-    HubComponent,
-    StudioInterfaceComponent
-  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })

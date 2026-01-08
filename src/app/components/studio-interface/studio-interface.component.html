@@ -57,7 +57,7 @@
       </div>
       <div class="master-controls">
         <label for="masterVolume">Master Volume: {{ masterVolume() }}%</label>
-        <input id="masterVolume" type="range" min="0" max="100" [value]="masterVolume()" (input)="updateMasterVolume(($event.target as HTMLInputElement).valueAsNumber)">
+        <input id="masterVolume" type="range" min="0" max="100" [value]="masterVolume()" (input)="updateMasterVolume($any($event.target).valueAsNumber)">
         <div class="quality-flags">
           <label *ngFor="let flag of qualityFlags" class="flag">
             <input type="checkbox"
@@ -106,7 +106,7 @@
               {{ control.label }}
               <input type="range" [min]="control.min" [max]="control.max" [step]="control.step"
                      [value]="plugin.values[control.id]"
-                     (input)="updatePluginControl(plugin, control.id, ($event.target as HTMLInputElement).valueAsNumber)">
+                     (input)="updatePluginControl(plugin, control.id, $any($event.target).valueAsNumber)">
               <span>{{ plugin.values[control.id] }}{{ control.unit || '' }}</span>
             </label>
           </div>
@@ -142,40 +142,40 @@
         </div>
       </header>
 
-      <div class="meter" [style.setProperty]="('--meter-level', meterLevelFor(channel.id) + '%')">
+      <div class="meter" [style.setProperty]="['--meter-level', meterLevelFor(channel.id) + '%']">
         <span>Signal</span>
         <div class="bar"></div>
       </div>
 
       <div class="slider-group">
         <label>Level: {{ channel.level }}%</label>
-        <input type="range" min="0" max="100" [value]="channel.level" (input)="updateChannelLevel(channel, ($event.target as HTMLInputElement).valueAsNumber)">
+        <input type="range" min="0" max="100" [value]="channel.level" (input)="updateChannelLevel(channel, $any($event.target).valueAsNumber)">
       </div>
 
       <div class="slider-group">
         <label>Pan: {{ channel.pan }}%</label>
-        <input type="range" min="-50" max="50" [value]="channel.pan" (input)="updateChannelPan(channel, ($event.target as HTMLInputElement).valueAsNumber)">
+        <input type="range" min="-50" max="50" [value]="channel.pan" (input)="updateChannelPan(channel, $any($event.target).valueAsNumber)">
       </div>
 
       <div class="slider-grid">
         <label>
           Noise Gate: {{ channel.noiseGate }}%
-          <input type="range" min="0" max="100" [value]="channel.noiseGate" (input)="updateNoiseGate(channel, ($event.target as HTMLInputElement).valueAsNumber)">
+          <input type="range" min="0" max="100" [value]="channel.noiseGate" (input)="updateNoiseGate(channel, $any($event.target).valueAsNumber)">
         </label>
         <label>
           Distortion Guard: {{ channel.distortionGuard }}%
-          <input type="range" min="0" max="100" [value]="channel.distortionGuard" (input)="updateDistortionGuard(channel, ($event.target as HTMLInputElement).valueAsNumber)">
+          <input type="range" min="0" max="100" [value]="channel.distortionGuard" (input)="updateDistortionGuard(channel, $any($event.target).valueAsNumber)">
         </label>
       </div>
 
       <div class="slider-group">
         <label>Latency Trim (ms): {{ channel.latencyMs }}</label>
-        <input type="range" min="0" max="20" [value]="channel.latencyMs" (input)="updateLatency(channel, ($event.target as HTMLInputElement).valueAsNumber)">
+        <input type="range" min="0" max="20" [value]="channel.latencyMs" (input)="updateLatency(channel, $any($event.target).valueAsNumber)">
       </div>
 
       <label class="connection-select">
         Connection Type
-        <select [value]="channel.connectionType" (change)="updateConnection(channel, ($event.target as HTMLSelectElement).value as any)">
+        <select [value]="channel.connectionType" (change)="updateConnection(channel, $any($event.target).value)">
           <option *ngFor="let type of connectionTypes" [value]="type">{{ type | uppercase }}</option>
         </select>
       </label>

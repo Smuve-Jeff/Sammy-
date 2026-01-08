@@ -1,16 +1,12 @@
 import { Component, ChangeDetectionStrategy, signal, ElementRef, viewChild, output, input, effect, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AiService, GenerateImagesResponse } from '../../services/ai.service';
 // FIX: Update AppTheme import to break circular dependency
 import { AppTheme } from '../../services/user-context.service';
 
 @Component({
   selector: 'app-image-editor',
-  standalone: true,
   templateUrl: './image-editor.component.html',
   styleUrls: ['./image-editor.component.css'],
-  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImageEditorComponent {

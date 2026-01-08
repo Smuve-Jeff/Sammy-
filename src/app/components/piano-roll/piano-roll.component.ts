@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, computed, effect, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { MusicManagerService } from '../../services/music-manager.service';
 import { InstrumentsService } from '../../services/instruments.service';
 
@@ -7,17 +6,8 @@ const BASE_MIDI = 60; // C4
 const OCTAVES = 3;
 const STEPS = 16;
 
-function midiName(midi: number) {
-  const NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  const name = NAMES[midi % 12];
-  const octave = Math.floor(midi / 12) - 1;
-  return `${name}${octave}`;
-}
-
 @Component({
   selector: 'app-piano-roll',
-  standalone: true,
-  imports: [CommonModule],
   templateUrl: './piano-roll.component.html',
   styleUrls: ['./piano-roll.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,13 +29,7 @@ export class PianoRollComponent {
   instrumentOptions = computed(() => this.instrumentsSvc.getPresets().map(p => ({ id: p.id, name: p.name })));
   selectedTrackId = computed(() => this.music.selectedTrackId());
   selectedTrack = computed(() => this.music.tracks().find(t => t.id === this.selectedTrackId()) || this.music.tracks()[0]);
-  selectedInstrumentId = computed({
-    read: () => this.selectedTrack()?.instrumentId || this.instrumentOptions()[0]?.id,
-    write: (val: string) => {
-      const id = this.selectedTrackId();
-      if (id != null) this.music.setInstrument(id, val);
-    }
-  });
+  selectedInstrumentId = computed(() => this.selectedTrack()?.instrumentId || this.instrumentOptions()[0]?.id);
 
   // Sequence view computed from track notes
   sequenceFor(midi: number) {
@@ -75,6 +59,14 @@ export class PianoRollComponent {
     }
   }
 
+  onInstrumentChange(event: Event) {
+    const newInstId = (event.target as HTMLSelectElement).value;
+    const trackId = this.selectedTrackId();
+    if (newInstId && trackId) {
+      this.music.setInstrument(trackId, newInstId);
+    }
+  }
+
   toggleNote(midi: number, step: number) {
     const id = this.selectedTrackId();
     if (id == null) return;
@@ -83,4 +75,11 @@ export class PianoRollComponent {
   }
 
   trackName() { return this.selectedTrack()?.name || 'Track'; }
+  
+  midiName(midi: number) {
+    const NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const name = NAMES[midi % 12];
+    const octave = Math.floor(midi / 12) - 1;
+    return `${name}${octave}`;
+  }
 }

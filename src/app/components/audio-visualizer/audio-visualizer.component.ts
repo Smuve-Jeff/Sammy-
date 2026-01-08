@@ -1,14 +1,11 @@
 import { Component, ChangeDetectionStrategy, input, ElementRef, viewChild, AfterViewInit, OnDestroy, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
 // FIX: Update AppTheme import to break circular dependency
 import { AppTheme } from '../../services/user-context.service';
 
 @Component({
   selector: 'app-audio-visualizer',
-  standalone: true,
   templateUrl: './audio-visualizer.component.html',
   styleUrls: ['./audio-visualizer.component.css'],
-  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AudioVisualizerComponent implements AfterViewInit, OnDestroy {

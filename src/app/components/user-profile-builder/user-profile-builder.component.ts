@@ -1,11 +1,7 @@
 import { Component, ChangeDetectionStrategy, signal, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-user-profile-builder',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
   templateUrl: './user-profile-builder.component.html',
   styleUrls: ['./user-profile-builder.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

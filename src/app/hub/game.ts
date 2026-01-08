@@ -4,6 +4,7 @@ export interface Game {
   url: string;           // Play URL or route
   image?: string;        // Cover image
   description?: string;
+  genre?: string;
   tags?: string[];       // e.g., ['PvP','Shooter','Duel']
   previewVideo?: string; // Short webm/mp4 for hover preview
   rating?: number;       // 0..5

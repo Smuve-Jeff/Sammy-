@@ -1,7 +1,5 @@
 
 import { Component, ChangeDetectionStrategy, input, signal, computed, inject, effect, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 // FIX: Update AppTheme import to break circular dependency
 import { AppTheme } from '../../services/user-context.service';
 import { AiService, GenerateContentResponse, Type } from '../../services/ai.service';
@@ -20,10 +18,8 @@ export const MOCK_ARTISTS: ArtistProfile[] = [
 
 @Component({
   selector: 'app-networking',
-  standalone: true,
   templateUrl: './networking.component.html',
   styleUrls: ['./networking.component.css'],
-  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NetworkingComponent {
