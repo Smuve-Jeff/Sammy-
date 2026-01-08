@@ -1,95 +1,104 @@
+<div class="hub-layout">
 
-<div class="hub-container">
-  <!-- Header -->
-  <header class="hub-header">
-    <div class="logo">
-      <img src="assets/tha-spot-logo.png" alt="Tha Spot">
-      <span>Tha Spot</span>
-    </div>
-    <div class="hub-actions">
-      <button class="action-btn">Friends</button>
-      <button class="action-btn">Leaderboards</button>
-      <div class="user-profile">
-        <img src="https://i.pravatar.cc/40?u=a042581f4e29026704d" alt="User Avatar">
-        <span>Smuve</span>
-      </div>
-    </div>
-  </header>
+  <!-- Left Sidebar -->
+  <aside class="left-sidebar">
+    <app-game-list (gameSelected)="selectGame($event)" [games]="games()"></app-game-list>
+  </aside>
 
   <!-- Main Content -->
-  <div class="hub-body">
-    <!-- Left Panel: Filters -->
-    <aside class="left-panel">
-      <h3>Filters</h3>
-      <div class="filter-group">
-        <label for="search">Search</label>
-        <input type="text" id="search" placeholder="Game name..." [(ngModel)]="filterQuery" (ngModelChange)="applyFilters()">
+  <main class="main-content">
+    <header class="main-header">
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search for games..." (input)="onSearch($event)">
       </div>
-      <div class="filter-group">
-        <label for="genre">Genre</label>
-        <select id="genre" [(ngModel)]="filterGenre" (ngModelChange)="applyFilters()">
-          <option value="">All</option>
-          <option>Shooter</option>
-          <option>Racing</option>
-          <option>Strategy</option>
-          <option>Arcade</option>
-          <option>Puzzle</option>
-        </select>
-      </div>
-       <div class="filter-group">
-        <label for="sort">Sort By</label>
-        <select id="sort" [(ngModel)]="filterSort" (ngModelChange)="applyFilters()">
-          <option>Popular</option>
-          <option>Rating</option>
-          <option>Newest</option>
-        </select>
-      </div>
-    </aside>
-
-    <!-- Center Panel: Game Grid -->
-    <main class="center-panel">
-      <div class="game-grid">
-        <div class="game-card" *ngFor="let game of filteredGames()" 
-             (mouseenter)="hoveredGame.set(game)" (mouseleave)="hoveredGame.set(null)">
-          <div class="card-media">
-            <video *ngIf="hoveredGame() === game && game.previewVideo" [src]="game.previewVideo" autoplay muted loop class="preview-video"></video>
-            <img *ngIf="hoveredGame() !== game || !game.previewVideo" [src]="game.image" [alt]="game.name" class="cover-image">
-          </div>
-          <div class="card-body">
-            <h4 class="title">{{ game.name }}</h4>
-            <div class="metadata">
-              <span class="tag" *ngFor="let tag of game.tags">{{ tag }}</span>
-              <span class="rating">{{ game.rating }} ★</span>
-              <span class="players">{{ game.playersOnline }} playing</span>
-            </div>
-          </div>
-           <div class="card-actions">
-            <button class="play-btn" (click)="playGame(game)">Play</button>
-            <button class="action-btn" *ngIf="game.modes?.includes('duel')">Duel</button>
-            <button class="action-btn" *ngIf="game.modes?.includes('team')">Team Up</button>
-          </div>
+      <div class="filter-sort-controls">
+        <div class="genre-filters">
+          <button *ngFor="let genre of genres" 
+                  [class.active]="activeFilters().genre === genre" 
+                  (click)="setGenre(genre)">{{ genre }}</button>
+        </div>
+        <div class="sort-options">
+          <span>Sort by:</span>
+          <button *ngFor="let mode of sortModes" 
+                  [class.active]="sortMode() === mode" 
+                  (click)="setSort(mode)">{{ mode }}</button>
         </div>
       </div>
-    </main>
+    </header>
 
-    <!-- Right Panel: Activity Feed -->
-    <aside class="right-panel">
-      <h3>Activity Feed</h3>
-      <div class="feed-item" *ngFor="let item of activityFeed()">
-        <p [innerHTML]="item"></p>
-        <span class="timestamp">
-          {{ item.includes('duel') ? '5m ago' : (item.includes('recruiting') ? '12m ago' : (item.includes('online') ? '1h ago' : '3h ago')) }}
-        </span>
+    <div *ngIf="!selectedGame() && !showBattlefieldLobby()" class="game-grid-container">
+      <div class="game-grid">
+        <app-game-card *ngFor="let game of games()" 
+                       [game]="game" 
+                       (click)="selectGame(game)"></app-game-card>
       </div>
-    </aside>
-  </div>
-  
-  <!-- Game Player Overlay -->
-  <div class="game-player-overlay" *ngIf="activeGame()">
-    <div class="player-header">
-      <h3>{{ activeGame()?.name }}</h3>
-      <button class="close-btn" (click)="closeGame()">×</button>
     </div>
-    <iframe [src]="activeGameUrl()" frameborder="0" allowfullscreen></iframe>
-  </div>
+
+    <app-game-view *ngIf="selectedGame() && !showBattlefieldLobby()" 
+                   [game]="selectedGame()" 
+                   (close)="deselectGame()"></app-game-view>
+
+    <!-- "Tha Battlefield" Pre-Match Lobby Overlay -->
+    <div *ngIf="showBattlefieldLobby()" class="overlay-backdrop">
+      <div class="battlefield-lobby">
+        <h2>Tha Battlefield</h2>
+        <p>Prepare for a music duel!</p>
+        
+        <div class="lobby-config">
+          <div class="config-group">
+            <label for="track-select">Choose Your Weapon (Track):</label>
+            <select id="track-select" [ngModel]="battleConfig().track?.url" (ngModelChange)="updateBattleConfig('track', $event)">
+              <option [ngValue]="null" disabled>Select a track...</option>
+              <option *ngFor="let track of musicShowcases()" [value]="track.url">{{ track.title }}</option>
+            </select>
+          </div>
+
+          <div class="config-group">
+            <label>Mode:</label>
+            <div class="radio-group">
+              <button [class.active]="battleConfig().mode === 'duel'" (click)="updateBattleConfig('mode', 'duel')">1v1 Duel</button>
+              <button [class.active]="battleConfig().mode === 'team'" (click)="updateBattleConfig('mode', 'team')">Team Battle</button>
+            </div>
+          </div>
+
+          <div class="config-group">
+            <label>Round Length:</label>
+            <div class="radio-group">
+              <button [class.active]="battleConfig().roundLength === 30" (click)="updateBattleConfig('roundLength', 30)">30s</button>
+              <button [class.active]="battleConfig().roundLength === 60" (click)="updateBattleConfig('roundLength', 60)">60s</button>
+              <button [class.active]="battleConfig().roundLength === 90" (click)="updateBattleConfig('roundLength', 90)">90s</button>
+            </div>
+          </div>
+
+          <div class="config-group">
+            <label>Rounds:</label>
+            <div class="radio-group">
+              <button [class.active]="battleConfig().rounds === 1" (click)="updateBattleConfig('rounds', 1)">1</button>
+              <button [class.active]="battleConfig().rounds === 2" (click)="updateBattleConfig('rounds', 2)">2</button>
+              <button [class.active]="battleConfig().rounds === 3" (click)="updateBattleConfig('rounds', 3)">3</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="lobby-actions">
+          <button class="secondary-btn" (click)="showBattlefieldLobby.set(false)">Cancel</button>
+          <button class="primary-btn" (click)="startBattle()">Start Battle</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Right Sidebar -->
+  <aside class="right-sidebar">
+    <button (click)="toggleProfile(!showProfile())" class="sidebar-btn">Profile</button>
+    <button (click)="toggleChat(!showChat())" class="sidebar-btn">Chat</button>
+
+    <div class="sidebar-content">
+        <app-profile *ngIf="showProfile()"></app-profile>
+        <app-connections *ngIf="showChat()"></app-connections>
+    </div>
+  </aside>
+
 </div>

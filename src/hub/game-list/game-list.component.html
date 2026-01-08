@@ -1,5 +1,5 @@
 <div class="game-grid">
-  <div *ngFor="let game of games" class="game-card" (mouseenter)="playPreview($event, true)" (mouseleave)="playPreview($event, false)">
+  <div *ngFor="let game of games" class="game-card" (mouseenter)="playPreview($event, true)" (mouseleave)="playPreview($event, false)" (click)="selectGame(game.id)">
     <img [src]="game.image" [alt]="game.name" class="cover-art">
     <video [src]="game.previewVideo" class="preview-video" muted loop></video>
     <div class="game-card-content">

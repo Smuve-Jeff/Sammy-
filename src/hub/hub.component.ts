@@ -1,119 +1,125 @@
-
-import { Component, OnInit, signal, computed } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Game } from './game';
+import { Component, signal, computed, effect, OnDestroy, OnInit } from '@angular/core';
 import { GameService } from './game.service';
-import { WebsocketService, Message } from '../services/websocket.service';
+import { ProfileService, ShowcaseItem } from './profile/profile.service';
+import { Game } from './game';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-hub',
-  templateUrl: './hub.html',
-  styleUrls: ['./hub.css']
+  templateUrl: './hub.component.html',
+  styleUrls: ['./hub.component.css']
 })
-export class HubComponent implements OnInit {
-  // Signals for state management
-  filteredGames = signal<Game[]>([]); 
-  activityFeed = signal<string[]>([]);
-  hoveredGame = signal<Game | null>(null);
-  activeGame = signal<Game | null>(null);
-  activeGameUrl = computed(() => {
-    const game = this.activeGame();
-    return game ? this.sanitizer.bypassSecurityTrustResourceUrl(game.url) : null;
+export class HubComponent implements OnInit, OnDestroy {
+  // Signals for UI state
+  showChat = signal(false);
+  showProfile = signal(false);
+  showBattlefieldLobby = signal(false);
+  selectedGame = signal<Game | undefined>(undefined);
+  selectedUserId = signal<string | undefined>(undefined);
+
+  // Game list and filtering
+  games = signal<Game[]>([]);
+  genres = ['Shooter', 'Arcade', 'Puzzle', 'Arena', 'Runner', 'Rhythm', 'Music Battle'];
+  sortModes: ('Popular' | 'Rating' | 'Newest')[] = ['Popular', 'Rating', 'Newest'];
+  activeFilters = signal<{ genre?: string; tag?: string; query?: string; }>({});
+  sortMode = signal<'Popular' | 'Rating' | 'Newest'>('Popular');
+  
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
+  // "Tha Battlefield" lobby state
+  musicShowcases = computed(() => 
+    this.profileService.myProfile()?.showcases.filter(s => s.type === 'music' && s.visibility === 'public') || []
+  );
+  battleConfig = signal({
+    track: null as ShowcaseItem | null,
+    mode: 'duel' as 'duel' | 'team',
+    roundLength: 60 as 30 | 60 | 90,
+    rounds: 1 as 1 | 2 | 3,
+    matchType: 'public' as 'public' | 'private',
   });
-
-  // Modal visibility signals
-  isDuelModalVisible = signal(false);
-  isTeamModalVisible = signal(false);
-
-  // Filter and sort states
-  filterQuery = signal('');
-  filterGenre = signal('');
-  filterSort = signal<'Popular' | 'Rating' | 'Newest'>('Popular');
-
-  matchmakingStatus = signal('');
 
   constructor(
     private gameService: GameService, 
-    private sanitizer: DomSanitizer,
-    private websocketService: WebsocketService
-  ) {}
+    public profileService: ProfileService
+  ) {
+    // Effect to refetch games when filters or sort change
+    effect(() => {
+      this.gameService.listGames(this.activeFilters(), this.sortMode())
+        .subscribe(games => this.games.set(games));
+    });
+  }
 
   ngOnInit() {
-    this.loadGames();
-    this.setupActivityFeed();
-    this.connectToMatchmaking();
-  }
-
-  connectToMatchmaking() {
-    this.websocketService.connect('wss://tha-spot-matchmaking.glitch.me');
-    this.websocketService.messages.subscribe(message => {
-      console.log('Received message from matchmaking server: ', message);
-      this.matchmakingStatus.set('Challenge sent!');
-      this.activityFeed.update(feed => ["You challenged a player to a duel.", ...feed]);
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(query => {
+      this.activeFilters.update(filters => ({ ...filters, query }));
     });
   }
 
-  // Fetches games from the service based on current filter & sort selections
-  loadGames() {
-    const filters = {
-      query: this.filterQuery() || undefined,
-      genre: this.filterGenre() || undefined,
-    };
-    const sort = this.filterSort();
-
-    this.gameService.listGames(filters, sort).subscribe(games => {
-      this.filteredGames.set(games);
-    });
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   
-  // This is called by the template when a filter value changes
-  applyFilters() {
-    this.loadGames();
+  // Method to handle game selection
+  selectGame(game: Game) {
+    if (game.id === '14') { // 'Tha Battlefield'
+      this.showBattlefieldLobby.set(true);
+      this.selectedGame.set(game);
+    } else {
+      this.selectedGame.set(game);
+    }
+  }
+  
+  deselectGame() {
+      this.selectedGame.set(undefined);
   }
 
-  setupActivityFeed() {
-    this.activityFeed.set([
-      "Player <strong>N00bM4ster</strong> challenged <strong>xX_Slayer_Xx</strong> to a duel in <em>Neon Arena</em>.",
-      "Team <strong>Vortex</strong> is recruiting skilled players for <em>Rhythm Rumble</em>.",
-      "Your friend <strong>CyberGamer</strong> just came online.",
-      "A new high score has been set in <em>Grid Runner</em>!",
-    ]);
+  // Filter and sort methods
+  onSearch(event: Event) {
+    const query = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(query);
   }
 
-  playGame(game: Game) {
-    if (game.url) {
-      this.activeGame.set(game);
+  setGenre(genre?: string) {
+    this.activeFilters.update(filters => ({ ...filters, genre: this.activeFilters().genre === genre ? undefined : genre }));
+  }
+
+  setSort(mode: 'Popular' | 'Rating' | 'Newest') {
+    this.sortMode.set(mode);
+  }
+
+  // "Tha Battlefield" lobby methods
+  updateBattleConfig<K extends keyof typeof this.battleConfig.prototype>(field: K, value: any) {
+    if (field === 'track' && typeof value === 'string') {
+        const track = this.musicShowcases().find(t => t.url === value);
+        this.battleConfig.update(config => ({ ...config, track: track || null }));
+    } else {
+        this.battleConfig.update(config => ({ ...config, [field]: value }));
     }
   }
 
-  closeGame() {
-    this.activeGame.set(null);
+  startBattle() {
+    if (!this.battleConfig().track) {
+      alert('Please select a track to battle with!');
+      return;
+    }
+    console.log('Starting battle with config:', this.battleConfig());
+    // Future: Call a service to start the match
+    this.showBattlefieldLobby.set(false);
   }
 
-  // Modal control methods
-  openDuelModal() {
-    this.isDuelModalVisible.set(true);
+  // General UI toggles
+  toggleChat(visible: boolean) {
+    this.showChat.set(visible);
   }
 
-  openTeamModal() {
-    this.isTeamModalVisible.set(true);
-  }
-
-  sendChallenge() {
-    const message: Message = {
-      source: 'tha-spot',
-      content: 'challenge'
-    };
-    this.websocketService.messages.next(message);
-    this.isDuelModalVisible.set(false);
-  }
-
-  createTeam() {
-    const message: Message = {
-      source: 'tha-spot',
-      content: 'team_create'
-    };
-    this.websocketService.messages.next(message);
-    this.isTeamModalVisible.set(false);
+  toggleProfile(visible: boolean) {
+    this.showProfile.set(visible);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { Game } from '../game';
 
 @Component({
@@ -9,6 +9,11 @@ import { Game } from '../game';
 })
 export class GameListComponent {
   @Input() games: Game[] = [];
+  @Output() gameSelected = new EventEmitter<string>();
+
+  selectGame(gameId: string) {
+    this.gameSelected.emit(gameId);
+  }
 
   playPreview(event: MouseEvent, play: boolean) {
     const card = (event.currentTarget as HTMLElement);

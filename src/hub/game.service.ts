@@ -35,19 +35,17 @@ class MockSocket {
 })
 export class GameService implements OnDestroy {
   private allGames: Game[] = [
-    { id: 1, name: 'Babylon FPS', url: 'https://babylonjs-archive.github.io/simple-3d-fps/', image: 'https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/dist/preview release/gui/screenshots/fps.png', genre: 'Shooter', tags: ['PvP','Arena'], rating: 4.2, playersOnline: 128, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 2, name: 'HexGL', url: 'https://hexgl.bkcore.com/', image: 'https://i.ytimg.com/vi/126JgG24n-A/maxresdefault.jpg', genre: 'Racing', tags: ['Time Trial'], rating: 4.0, playersOnline: 86, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 3, name: '3D Hartwig Chess', url: 'https://www.csszengarden.com/212/212.png', image: 'https://www.csszengarden.com/212/212.png', genre: 'Strategy', tags: ['Duel','Classic'], rating: 4.6, playersOnline: 42, modes: ['duel'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 4, name: 'Krunker', url: 'https://krunker.io/', image: 'https://picsum.photos/seed/krunker/640/360', genre: 'Shooter', tags: ['PvP','Arena'], rating: 4.5, playersOnline: 1200, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 5, name: 'Shell Shockers', url: 'https://shellshock.io/', image: 'https://picsum.photos/seed/shell/640/360', genre: 'Shooter', tags: ['PvP'], rating: 4.3, playersOnline: 850, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 6, name: 'Venge.io', url: 'https://venge.io/', image: 'https://picsum.photos/seed/venge/640/360', genre: 'Shooter', tags: ['PvP','Arena'], rating: 4.2, playersOnline: 640, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 7, name: 'Slither.io', url: 'https://slither.io/', image: 'https://picsum.photos/seed/slither/640/360', genre: 'Arcade', tags: ['PvP','Casual'], rating: 4.1, playersOnline: 3100, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 8, name: 'Little Alchemy 2', url: 'https://littlealchemy2.com/', image: 'https://picsum.photos/seed/alchemy/640/360', genre: 'Puzzle', tags: ['Casual'], rating: 4.0, playersOnline: 230, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 9, name: '2048', url: 'https://play2048.co/', image: 'https://picsum.photos/seed/2048/640/360', genre: 'Puzzle', tags: ['Casual'], rating: 3.8, playersOnline: 190, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 10, name: 'Neon Arena', url: '/play/neon-arena', image: 'https://picsum.photos/seed/neon/640/360', genre: 'Arena', tags: ['PvP','Duel'], rating: 4.4, playersOnline: 220, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 11, name: 'Grid Runner', url: '/play/grid-runner', image: 'https://picsum.photos/seed/grid/640/360', genre: 'Runner', tags: ['Time Trial'], rating: 3.9, playersOnline: 64, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 12, name: 'Cipher Clash', url: '/play/cipher-clash', image: 'https://picsum.photos/seed/cipher/640/360', genre: 'Puzzle', tags: ['Duel'], rating: 4.1, playersOnline: 73, modes: ['duel'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-    { id: 13, name: 'Rhythm Rumble', url: '/play/rhythm-rumble', image: 'https://picsum.photos/seed/rhythm/640/360', genre: 'Rhythm', tags: ['PvP'], rating: 4.3, playersOnline: 95, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+    { id: '14', name: 'Tha Battlefield', url: '/play/tha-battlefield', image: 'https://picsum.photos/seed/battlefield/640/360', genre: 'Music Battle', tags: ['PvP','Music','Duel'], rating: 4.6, playersOnline: 150, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'Battle other online artists using songs created inside the app.', bannerImage: 'https://picsum.photos/seed/battlefield-banner/1280/360' },
+    { id: '4', name: 'Krunker', url: 'https://krunker.io/', image: 'https://picsum.photos/seed/krunker/640/360', genre: 'Shooter', tags: ['PvP','Arena'], rating: 4.5, playersOnline: 1200, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'Krunker.io is a fast-paced pixelated first-person shooter. In this game, players drop into a pixelated world and fight against other players from all over the world.', bannerImage: 'https://picsum.photos/seed/krunker-banner/1280/360' },
+    { id: '5', name: 'Shell Shockers', url: 'https://shellshock.io/', image: 'https://picsum.photos/seed/shell/640/360', genre: 'Shooter', tags: ['PvP'], rating: 4.3, playersOnline: 850, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'Shell Shockers is a multiplayer .io FPS game featuring eggs armed with guns. You take control of a violent egg and battle other players in a variety of maps.', bannerImage: 'https://picsum.photos/seed/shell-banner/1280/360' },
+    { id: '6', name: 'Venge.io', url: 'https://venge.io/', image: 'https://picsum.photos/seed/venge/640/360', genre: 'Shooter', tags: ['PvP','Arena'], rating: 4.2, playersOnline: 640, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'Venge.io is an objective-based first-person shooter. Every match is an intense, unique experience with the different weapons and maps.', bannerImage: 'https://picsum.photos/seed/venge-banner/1280/360' },
+    { id: '7', name: 'Slither.io', url: 'https://slither.io/', image: 'https://picsum.photos/seed/slither/640/360', genre: 'Arcade', tags: ['PvP','Casual'], rating: 4.1, playersOnline: 3100, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'Slither.io is a multiplayer online video game available for iOS, Android, and web browsers, developed by Steve Howse. Players control an avatar resembling a worm, which consumes multicolored pellets, both from other players and ones that naturally spawn on the map in the game, to grow in size.', bannerImage: 'https://picsum.photos/seed/slither-banner/1280/360' },
+    { id: '8', name: 'Little Alchemy 2', url: 'https://littlealchemy2.com/', image: 'https://picsum.photos/seed/alchemy/640/360', genre: 'Puzzle', tags: ['Casual'], rating: 4.0, playersOnline: 230, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'Little Alchemy 2 is a game where you combine elements to create new ones. Start with four basic items and mix and match them to create more and more awesome things.', bannerImage: 'https://picsum.photos/seed/alchemy-banner/1280/360' },
+    { id: '9', name: '2048', url: 'https://play2048.co/', image: 'https://picsum.photos/seed/2048/640/360', genre: 'Puzzle', tags: ['Casual'], rating: 3.8, playersOnline: 190, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: '2048 is a single-player sliding tile puzzle video game written by Italian web developer Gabriele Cirulli. The game\'s objective is to slide numbered tiles on a grid to combine them to create a tile with the number 2048.', bannerImage: 'https://picsum.photos/seed/2048-banner/1280/360' },
+    { id: '10', name: 'Neon Arena', url: '/play/neon-arena', image: 'https://picsum.photos/seed/neon/640/360', genre: 'Arena', tags: ['PvP','Duel'], rating: 4.4, playersOnline: 220, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'A fast-paced, futuristic arena shooter with a neon aesthetic.', bannerImage: 'https://picsum.photos/seed/neon-banner/1280/360' },
+    { id: '11', name: 'Grid Runner', url: '/play/grid-runner', image: 'https://picsum.photos/seed/grid/640/360', genre: 'Runner', tags: ['Time Trial'], rating: 3.9, playersOnline: 64, modes: ['solo'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'Race against the clock in a challenging, procedurally generated grid.', bannerImage: 'https://picsum.photos/seed/grid-banner/1280/360' },
+    { id: '12', name: 'Cipher Clash', url: '/play/cipher-clash', image: 'https://picsum.photos/seed/cipher/640/360', genre: 'Puzzle', tags: ['Duel'], rating: 4.1, playersOnline: 73, modes: ['duel'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'A head-to-head puzzle game of logic and deduction.', bannerImage: 'https://picsum.photos/seed/cipher-banner/1280/360' },
+    { id: '13', name: 'Rhythm Rumble', url: '/play/rhythm-rumble', image: 'https://picsum.photos/seed/rhythm/640/360', genre: 'Rhythm', tags: ['PvP'], rating: 4.3, playersOnline: 95, modes: ['duel','team'], previewVideo: 'https://www.w3schools.com/html/mov_bbb.mp4', description: 'A competitive rhythm game where you battle opponents with your timing and accuracy.', bannerImage: 'https://picsum.photos/seed/rhythm-banner/1280/360' },
   ];
 
   games = signal<Game[]>([]);
@@ -82,11 +80,16 @@ export class GameService implements OnDestroy {
         filteredGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'Newest':
-        filteredGames.sort((a, b) => b.id - a.id);
+        filteredGames.sort((a, b) => parseInt(b.id) - parseInt(a.id));
         break;
     }
     
     return of(filteredGames).pipe(delay(200)); // Simulate network latency
+  }
+
+  getGame(id: string): Observable<Game | undefined> {
+    const game = this.allGames.find(g => g.id === id);
+    return of(game).pipe(delay(100));
   }
 
   getTrending(): Observable<Game[]> {
@@ -95,23 +98,23 @@ export class GameService implements OnDestroy {
   }
 
   getNew(): Observable<Game[]> {
-    const newGames = [...this.allGames].sort((a, b) => b.id - a.id).slice(0, 5);
+    const newGames = [...this.allGames].sort((a, b) => parseInt(b.id) - parseInt(a.id)).slice(0, 5);
     return of(newGames);
   }
 
   // --- Matchmaking & Lobby Stubs ---
 
-  queue(gameId: number, mode: 'duel' | 'team' | 'solo'): Observable<{ status: string; queueTime: number }> {
+  queue(gameId: string, mode: 'duel' | 'team' | 'solo'): Observable<{ status: string; queueTime: number }> {
     console.log(`Queueing for game ${gameId} in mode ${mode}`);
     return of({ status: 'in_queue', queueTime: 0 }).pipe(delay(500));
   }
 
-  leaveQueue(gameId: number): Observable<{ status: string }> {
+  leaveQueue(gameId: string): Observable<{ status: string }> {
     console.log(`Leaving queue for game ${gameId}`);
     return of({ status: 'left_queue' }).pipe(delay(200));
   }
 
-  createLobby(gameId: number, settings: any): Observable<{ lobbyId: string; status: string }> {
+  createLobby(gameId: string, settings: any): Observable<{ lobbyId: string; status: string }> {
     const lobbyId = `lobby_${Math.random().toString(36).substr(2, 9)}`;
     console.log(`Creating lobby for game ${gameId} with settings:`, settings);
     this.webSocket.send({ type: 'create_lobby', lobbyId, settings });

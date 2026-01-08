@@ -1,274 +1,220 @@
-
-:root {
-  --hub-bg: #0f172a; /* Neutral dark blue-gray */
-  --panel-bg: #1e293b; /* Slightly lighter panel background */
-  --header-bg: #0d121e; 
-  --primary: #818cf8; /* Soft indigo */
-  --accent: #c7d2fe;  /* Lighter indigo for highlights */
-  --text-light: #e2e8f0; /* Light gray for text */
-  --text-dark: #94a3b8;  /* Muted gray for secondary text */
-  --border-color: #334155;
-  --success: #22c55e; /* Green for play button */
+/* Hub Layout */
+.hub-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  height: 100vh;
+  background-color: #1a1a1a;
+  color: #fff;
 }
 
-.hub-container {
+.left-sidebar, .right-sidebar {
+  background-color: #1f1f1f;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.main-content {
+  padding: 20px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: var(--hub-bg);
-  color: var(--text-light);
-  font-family: 'Segoe UI', sans-serif;
 }
 
-.hub-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 2rem;
-  height: 60px;
-  background-color: var(--header-bg);
-  border-bottom: 1px solid var(--border-color);
+.main-header {
+  margin-bottom: 20px;
 }
 
-.logo {
+/* Search and Filters */
+.search-bar {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.search-bar .fa-search {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.filter-sort-controls {
+  background-color: #2a2a2a;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.genre-filters, .sort-options {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   align-items: center;
-  font-size: 1.5rem;
+}
+
+.genre-filters {
+    margin-bottom: 10px;
+}
+
+.sort-options span {
+  margin-right: 10px;
+  font-size: 14px;
   font-weight: bold;
 }
 
-.logo img {
-  height: 40px;
-  margin-right: 0.5rem;
-}
-
-.hub-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.action-btn {
-  background: none;
-  border: 1px solid var(--border-color);
-  color: var(--text-light);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+.genre-filters button, .sort-options button {
+  background: #333;
+  color: #ddd;
+  border: 1px solid #555;
+  padding: 8px 12px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
-.action-btn:hover {
-  background-color: var(--panel-bg);
+.genre-filters button.active, .sort-options button.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
 }
 
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.user-profile img {
-  border-radius: 50%;
-  height: 40px;
-  width: 40px;
-  border: 2px solid var(--primary);
-}
-
-.hub-body {
-  display: flex;
+/* Game Grid */
+.game-grid-container {
   flex-grow: 1;
-  overflow: hidden;
-}
-
-/* Left & Right Panels */
-.left-panel, .right-panel {
-  flex-basis: 250px;
-  flex-shrink: 0;
-  padding: 1.5rem;
-  background-color: var(--panel-bg);
-  overflow-y: auto;
-}
-
-.left-panel {
-  border-right: 1px solid var(--border-color);
-}
-
-.right-panel {
-  border-left: 1px solid var(--border-color);
-}
-
-h3 {
-  color: var(--primary);
-  margin-bottom: 1.5rem;
-}
-
-/* Center Panel */
-.center-panel {
-  flex-grow: 1;
-  padding: 2rem;
-  overflow-y: auto;
 }
 
 .game-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 20px;
 }
 
-/* Game Card */
-.game-card {
-  background-color: var(--panel-bg);
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-}
-
-.game-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 15px var(--primary);
-}
-
-.card-media {
-  position: relative;
-  height: 160px;
-}
-
-.cover-image, .preview-video {
+/* Right Sidebar */
+.right-sidebar .sidebar-btn {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: opacity 0.3s;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 5px;
+  text-align: left;
 }
 
-.card-body {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.title {
-  font-size: 1.25rem;
-  color: var(--text-light);
-  margin: 0 0 0.5rem;
-}
-
-.metadata {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  color: var(--text-dark);
-  font-size: 0.8rem;
-  margin-bottom: 1rem;
-}
-
-.tag {
-  background-color: #475569;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--text-light);
-}
-
-.rating, .players {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.card-actions {
-  display: flex;
-  padding: 0 1rem 1rem;
-  gap: 0.5rem;
-}
-
-.play-btn {
-  flex-grow: 1;
-  background-color: var(--success);
-  color: white;
-  border: none;
-  padding: 0.6rem;
-  border-radius: 6px;
-  font-weight: bold;
-}
-
-.card-actions .action-btn {
-  flex-grow: 0;
-  padding: 0.6rem 0.8rem;
-}
-
-/* Filter Group */
-.filter-group {
-  margin-bottom: 1.5rem;
-}
-
-.filter-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
-  font-size: 0.9rem;
-}
-
-.filter-group input, .filter-group select {
-  width: 100%;
-  padding: 0.5rem;
-  background-color: var(--hub-bg);
-  border: 1px solid var(--border-color);
-  color: var(--text-light);
-  border-radius: 4px;
-}
-
-/* Activity Feed */
-.feed-item {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.feed-item p {
-  margin: 0 0 0.25rem;
-  font-size: 0.9rem;
-}
-
-.feed-item .timestamp {
-  font-size: 0.75rem;
-  color: var(--text-dark);
-}
-
-/* Game Player Overlay */
-.game-player-overlay {
+/* Battlefield Lobby Overlay */
+.overlay-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.9);
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1000;
+}
+
+.battlefield-lobby {
+  background: #1f1f1f;
+  border: 1px solid #444;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.battlefield-lobby h2 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.battlefield-lobby p {
+  text-align: center;
+  color: #aaa;
+  margin-bottom: 30px;
+}
+
+.lobby-config {
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
-.player-header {
+.config-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #ccc;
+}
+
+.config-group select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2a2a2a;
+  color: #fff;
+  font-size: 16px;
+}
+
+.radio-group {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: #111;
+  gap: 10px;
 }
 
-.close-btn {
-  font-size: 2rem;
-  background: none;
-  border: none;
-  color: white;
+.radio-group button {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #555;
+  background: #333;
+  color: #ddd;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-.game-player-overlay iframe {
-  flex-grow: 1;
+.radio-group button.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+.lobby-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 40px;
+}
+
+.lobby-actions button {
+  padding: 12px 25px;
+  border-radius: 8px;
   border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.secondary-btn {
+  background-color: #555;
+  color: white;
 }
