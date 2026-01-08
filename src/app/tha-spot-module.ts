@@ -6,6 +6,7 @@ import { GameSearchComponent } from './game-search/game-search.component';
 import { GameService } from './game.service';
 import { LobbyComponent } from './lobby/lobby.component';
 import { ModalComponent } from '../hub/modal.component';
+import { WebsocketService } from '../services/websocket.service';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,7 @@ import { ModalComponent } from '../hub/modal.component';
   imports: [
     CommonModule
   ],
-  providers: [GameService],
+  providers: [GameService, WebsocketService],
   exports: [HubComponent]
 })
 export class ThaSpotModule { }

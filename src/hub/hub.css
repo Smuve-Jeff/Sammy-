@@ -66,6 +66,14 @@
   margin-bottom: 1rem;
 }
 
+.matchmaking-status {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--primary-accent);
+  border-radius: 4px;
+  background: rgba(0, 242, 255, 0.1);
+}
+
 .action-button {
   width: 100%;
   padding: 0.75rem;

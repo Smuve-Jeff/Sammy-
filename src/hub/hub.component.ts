@@ -1,7 +1,9 @@
+
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Game } from './game';
 import { GameService } from './game.service';
+import { WebsocketService, Message } from '../services/websocket.service';
 
 @Component({
   selector: 'app-hub',
@@ -10,7 +12,7 @@ import { GameService } from './game.service';
 })
 export class HubComponent implements OnInit {
   // Signals for state management
-  filteredGames = signal<Game[]>([]); // This now holds the games loaded from the service
+  filteredGames = signal<Game[]>([]); 
   activityFeed = signal<string[]>([]);
   hoveredGame = signal<Game | null>(null);
   activeGame = signal<Game | null>(null);
@@ -28,11 +30,27 @@ export class HubComponent implements OnInit {
   filterGenre = signal('');
   filterSort = signal<'Popular' | 'Rating' | 'Newest'>('Popular');
 
-  constructor(private gameService: GameService, private sanitizer: DomSanitizer) {}
+  matchmakingStatus = signal('');
+
+  constructor(
+    private gameService: GameService, 
+    private sanitizer: DomSanitizer,
+    private websocketService: WebsocketService
+  ) {}
 
   ngOnInit() {
     this.loadGames();
     this.setupActivityFeed();
+    this.connectToMatchmaking();
+  }
+
+  connectToMatchmaking() {
+    this.websocketService.connect('wss://tha-spot-matchmaking.glitch.me');
+    this.websocketService.messages.subscribe(message => {
+      console.log('Received message from matchmaking server: ', message);
+      this.matchmakingStatus.set('Challenge sent!');
+      this.activityFeed.update(feed => ["You challenged a player to a duel.", ...feed]);
+    });
   }
 
   // Fetches games from the service based on current filter & sort selections
@@ -79,5 +97,23 @@ export class HubComponent implements OnInit {
 
   openTeamModal() {
     this.isTeamModalVisible.set(true);
+  }
+
+  sendChallenge() {
+    const message: Message = {
+      source: 'tha-spot',
+      content: 'challenge'
+    };
+    this.websocketService.messages.next(message);
+    this.isDuelModalVisible.set(false);
+  }
+
+  createTeam() {
+    const message: Message = {
+      source: 'tha-spot',
+      content: 'team_create'
+    };
+    this.websocketService.messages.next(message);
+    this.isTeamModalVisible.set(false);
   }
 }

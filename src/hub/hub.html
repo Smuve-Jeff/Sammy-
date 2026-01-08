@@ -17,6 +17,9 @@
         <button class="action-button primary" (click)="openDuelModal()">Create Duel</button>
         <button class="action-button secondary" (click)="openTeamModal()">Create Team</button>
       </div>
+      <div class="matchmaking-status" *ngIf="matchmakingStatus()">
+        <p>{{ matchmakingStatus() }}</p>
+      </div>
       <app-game-search (searchChange)="onSearch($event)"></app-game-search>
     </aside>
 
@@ -36,7 +39,7 @@
 </div>
 
 <app-modal title="Create a Duel" [(visible)]="isDuelModalVisible">
-  <form>
+  <form (ngSubmit)="sendChallenge()">
     <div class="form-group">
       <label for="duel-game">Game</label>
       <select id="duel-game" class="form-control">
@@ -52,10 +55,10 @@
 </app-modal>
 
 <app-modal title="Create a Team" [(visible)]="isTeamModalVisible">
-  <form>
+  <form (ngSubmit)="createTeam()">
     <div class="form-group">
       <label for="team-name">Team Name</label>
-      <input type="text" id="team-name" class="form-control" placeholder="Enter a team name">
+      <input type="text" id="team-name" class.form-control placeholder="Enter a team name">
     </div>
     <div class="form-group">
       <label for="team-game">Game</label>
